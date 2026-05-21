@@ -1,0 +1,50 @@
+# =========================
+# Gradle build output
+# =========================
+.gradle/
+build/
+/build/
+**/build/
+captures/
+.externalNativeBuild/
+.cxx/
+
+# =========================
+# Android Studio / IntelliJ
+# =========================
+*.iml
+.idea/
+# (Optionally keep only the useful shared ones — uncomment if you want them tracked:)
+# !.idea/codeStyles/
+# !.idea/dictionaries/
+# !.idea/inspectionProfiles/
+
+# =========================
+# Local config (machine-specific)
+# =========================
+local.properties
+keystore.properties
+*.jks
+*.keystore
+
+# =========================
+# Logs, temp, crash files
+# =========================
+*.log
+hs_err_pid*
+*.hprof
+
+# =========================
+# OS-generated files
+# =========================
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# =========================
+# Misc
+# =========================
+/captures
+.navigation/
+proguard/

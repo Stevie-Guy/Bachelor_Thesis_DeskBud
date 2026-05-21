@@ -1,0 +1,49 @@
+<resources>
+<!--    Manifest-->
+    <string name="app_name">Desk Bud Hydration</string>
+
+<!--    Main activity-->
+    <string name="motto_aplicatie">Stay hydrated with your new buddy!</string>
+    <string name="tabs_goal">Goal</string>
+    <string name="tabs_istoric">Istoric</string>
+    <string name="tabs_calculator">Calculator</string>
+
+<!--    Tab goal-->
+    <string name="titlu_goal_tab">Astazi ai baut:</string>
+    <string name="warning_goal_not_set">Calculează mai întâi cantitatea recomandată, folosind tab-ul „Calculator”!</string>
+    <string name="cantitate_consumata_goal">0</string>
+    <string name="unitate_masura_goal">ml</string>
+    <string name="goal_hidratare">Goal: 2000 ml (2.0 L)</string>
+    <string name="procent_baut_din_goal">0% din total</string>
+    <string name="adauga_apa_label">Adaugă apă (ml)</string>
+    <string name="placeholder_apa_custom">ex: 200</string>
+    <string name="btn_adauga">Adaugă</string>
+    <string name="label_adauga_rapid">Adăugare Rapidă</string>
+    <string name="btn_100ml">💧\n100ml</string>
+    <string name="btn_250ml">💧\n250ml</string>
+    <string name="btn_500ml">💧\n500ml</string>
+    <string name="btn_1000ml">💧\n1000ml</string>
+
+<!--    Tab istoric-->
+    <string name="titlu_istoric">Istoric</string>
+    <string name="text_istoric_gol">Nu există zile înregistrate în istoric.</string>
+
+<!--    Tab_calculator-->
+    <string name="titlu_calculator">Calculator Hidratare</string>
+    <string name="label_greutate">Greutate (kg)</string>
+    <string name="placeholder_greutate">ex: 80.6</string>
+    <string name="label_alege_sex">Sex</string>
+    <string name="buton_barbat">♂ Bărbat</string>
+    <string name="buton_femeie">♀ Femeie</string>
+    <string name="descriere_btn_info_calculator">Informații despre formula de calcul</string>
+    <string name="btn_calculeaza">Calculează</string>
+    <string name="text_rezultat_calculator">Nivelul de apă recomandat:</string>
+    <string name="rezultat_calculator">2.45 L</string>
+    <string name="rezultat_calculator_ml">(2450 ml)</string>
+
+<!--    Item istoric-->
+    <string name="data_zi_istoric">May 12th 2025</string>
+    <string name="cantitate_zi_istoric">2300 ml</string>
+    <string name="procent_zi_istoric">115%</string>
+
+</resources>

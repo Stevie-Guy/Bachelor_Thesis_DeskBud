@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="10dp"
+    app:cardBackgroundColor="#eff7ff"
+    app:cardCornerRadius="16dp"
+    app:cardElevation="0dp"
+    app:strokeColor="#bedbff"
+    app:strokeWidth="1dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingHorizontal="16dp"
+        android:paddingVertical="14dp">
+
+        <TextView
+            android:id="@+id/tv_data_istoric"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/data_zi_istoric"
+            android:textSize="15sp"
+            android:textStyle="bold"
+            android:textColor="#1e2939"
+            android:layout_weight="1"/>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="horizontal"
+            android:gravity="end">
+
+            <TextView
+                android:id="@+id/tv_ml_istoric"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="4dp"
+                android:text="@string/cantitate_zi_istoric"
+                android:textSize="13sp"
+                android:textColor="#6B7280"/>
+
+            <TextView
+                android:id="@+id/tv_procent_istoric"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/procent_zi_istoric"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:textColor="#15803D"
+                android:background="@drawable/istoric_procent_atins"
+                android:paddingHorizontal="14dp"
+                android:paddingVertical="6dp"/>
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</com.google.android.material.card.MaterialCardView>
