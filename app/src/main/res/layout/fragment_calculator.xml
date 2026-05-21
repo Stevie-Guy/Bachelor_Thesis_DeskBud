@@ -58,7 +58,8 @@
                         android:layout_height="wrap_content"
                         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                         android:layout_marginBottom="16dp"
-                        app:hintEnabled="false">
+                        app:hintEnabled="false"
+                        app:boxBackgroundColor="#fff">
 
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/tiet_greutate"
@@ -130,11 +131,12 @@
 
             <ImageButton
                 android:id="@+id/btn_info_formula"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:padding="16dp"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:padding="8dp"
                 android:layout_gravity="top|end"
-                android:layout_marginEnd="4dp"
+                android:layout_marginTop="6dp"
+                android:layout_marginEnd="12dp"
                 android:src="@android:drawable/ic_dialog_info"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:contentDescription="@string/descriere_btn_info_calculator"

@@ -45,5 +45,8 @@
     <string name="data_zi_istoric">May 12th 2025</string>
     <string name="cantitate_zi_istoric">2300 ml</string>
     <string name="procent_zi_istoric">115%</string>
+    <string name="titlu_sterge_apa">Șterge apă băută (ml)</string>
+    <string name="placeholder_sterge_apa">ex: 500</string>
+    <string name="text_btn_sterge">Șterge</string>
 
 </resources>
