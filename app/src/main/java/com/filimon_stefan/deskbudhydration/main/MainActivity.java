@@ -1,4 +1,4 @@
-package com.filimon_stefan.deskbudhydration;
+package com.filimon_stefan.deskbudhydration.main;
 
 import android.os.Bundle;
 
@@ -9,6 +9,8 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.viewpager2.widget.ViewPager2;
 
+import com.filimon_stefan.deskbudhydration.R;
+import com.filimon_stefan.deskbudhydration.adapters.ViewPageAdapter;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 
@@ -26,7 +28,7 @@ public class MainActivity extends AppCompatActivity {
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
 
-        // Compatibilitate pentru noile device-uri
+        // Compatibilitate pentru noile device-uri edge to edge
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);

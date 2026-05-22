@@ -100,10 +100,12 @@
                             android:textSize="14sp"
                             android:backgroundTint="#2b7fff"
                             android:textColor="#FFFFFF"
+                            app:strokeColor="#2b7fff"
+                            app:strokeWidth="1dp"
                             app:cornerRadius="10dp"/>
 
                         <Button
-                            android:id="@+id/btn_femeie"
+                            android:id="@+id/btn_calculator_femeie"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
@@ -185,7 +187,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/text_rezultat_calculator"
-                    android:textSize="13sp"
+                    android:textSize="16sp"
                     android:textColor="#4a5565"
                     android:layout_marginBottom="4dp"/>
 
@@ -194,15 +196,16 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/rezultat_calculator"
-                    android:textSize="26sp"
+                    android:textSize="32sp"
                     android:textStyle="bold"
                     android:textColor="#155dfc"/>
 
                 <TextView
+                    android:id="@+id/tv_rezultat_goal_ml"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/rezultat_calculator_ml"
-                    android:textSize="11sp"
+                    android:textSize="14sp"
                     android:textColor="#6a7282"
                     android:layout_marginBottom="4dp"/>
 

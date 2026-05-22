@@ -1,7 +1,8 @@
-package com.filimon_stefan.deskbudhydration;
+package com.filimon_stefan.deskbudhydration.preparation;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import java.lang.reflect.Type;
@@ -13,7 +14,7 @@ public class PrefsHelper {
 
 //    Cheile pentru fiecare valoare salvata
     private static final String KEY_GREUTATE = "greutate";
-    private static final String KEY_SEX = "sex";
+    private static final String KEY_GEN = "gen";
     private static final String KEY_GOAL = "goal_zilnic";
     private static final String KEY_ML_GOAL = "ml_baut_azi";
     private static final String KEY_DATA_ZI_PRECEDENTA = "data_zi_precedenta";
@@ -37,13 +38,13 @@ public class PrefsHelper {
         prefs.edit().putFloat(KEY_GREUTATE, greutate).apply();
     }
 
-//    SEX
-    public String getSex(){
-        return prefs.getString(KEY_SEX, "");
+//    gen
+    public String getGen(){
+        return prefs.getString(KEY_GEN, "");
     }
 
-    public void setSex(String sex){
-        prefs.edit().putString(KEY_SEX, sex).apply();
+    public void setGen(String gen){
+        prefs.edit().putString(KEY_GEN, gen).apply();
     }
 
 //    GOAL ZILNIC (ml)
@@ -56,7 +57,7 @@ public class PrefsHelper {
     }
 
     public boolean aFolositCalculator(){
-        return getGreutate() > 0 && !getSex().isEmpty();
+        return getGreutate() > 0 && !getGen().isEmpty();
     }
 
 //    ML BAUTI AZI
@@ -65,11 +66,19 @@ public class PrefsHelper {
     }
 
     public void setMlBautiAzi(int ml){
-        prefs.edit().putInt(KEY_ML_GOAL, ml).apply();
+        if (ml < 0){
+            prefs.edit().putInt(KEY_ML_GOAL, 0).apply();
+        }else{
+            prefs.edit().putInt(KEY_ML_GOAL, ml).apply();
+        }
     }
 
     public void adaugaMlBauti(int ml){
         setMlBautiAzi(getMlBautiAzi() + ml);
+    }
+
+    public void scadeMlBauti(int ml){
+        setMlBautiAzi(getMlBautiAzi() - ml);
     }
 
     public void reseteazaMlBautiAzi(){

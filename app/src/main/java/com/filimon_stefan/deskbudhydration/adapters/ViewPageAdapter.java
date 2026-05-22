@@ -1,9 +1,13 @@
-package com.filimon_stefan.deskbudhydration;
+package com.filimon_stefan.deskbudhydration.adapters;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
+
+import com.filimon_stefan.deskbudhydration.fragments.FragmentCalculator;
+import com.filimon_stefan.deskbudhydration.fragments.FragmentDailyGoal;
+import com.filimon_stefan.deskbudhydration.fragments.FragmentIstoric;
 
 public class ViewPageAdapter extends FragmentStateAdapter {
     public ViewPageAdapter(@NonNull FragmentActivity activity){

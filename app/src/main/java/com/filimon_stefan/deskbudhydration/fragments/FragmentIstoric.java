@@ -1,4 +1,4 @@
-package com.filimon_stefan.deskbudhydration;
+package com.filimon_stefan.deskbudhydration.fragments;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -9,13 +9,15 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
-public class FragmentCalculator extends Fragment {
+import com.filimon_stefan.deskbudhydration.R;
+
+public class FragmentIstoric extends Fragment {
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
                              @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState){
-        return inflater.inflate(R.layout.fragment_calculator, container, false);
+        return inflater.inflate(R.layout.fragment_history, container, false);
     }
 }

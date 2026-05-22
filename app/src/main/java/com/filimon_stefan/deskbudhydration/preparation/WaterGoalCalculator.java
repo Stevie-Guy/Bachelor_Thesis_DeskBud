@@ -1,4 +1,4 @@
-package com.filimon_stefan.deskbudhydration;
+package com.filimon_stefan.deskbudhydration.preparation;
 
 public class WaterGoalCalculator {
 

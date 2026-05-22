@@ -52,7 +52,7 @@
                 android:text="@string/procent_zi_istoric"
                 android:textSize="14sp"
                 android:textStyle="bold"
-                android:textColor="#15803D"
+                android:textColor="#15803d"
                 android:background="@drawable/istoric_procent_atins"
                 android:paddingHorizontal="14dp"
                 android:paddingVertical="6dp"/>

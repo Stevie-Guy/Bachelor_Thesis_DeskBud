@@ -214,7 +214,7 @@
 
 
                     <Button
-                        android:id="@+id/btn250ml"
+                        android:id="@+id/btn_250ml"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
@@ -228,7 +228,7 @@
                         style="@style/Widget.MaterialComponents.Button.OutlinedButton"/>
 
                     <Button
-                        android:id="@+id/btn500ml"
+                        android:id="@+id/btn_500ml"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
@@ -242,7 +242,7 @@
                         style="@style/Widget.MaterialComponents.Button.OutlinedButton"/>
 
                     <Button
-                        android:id="@+id/btn1000ml"
+                        android:id="@+id/btn_1000ml"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"

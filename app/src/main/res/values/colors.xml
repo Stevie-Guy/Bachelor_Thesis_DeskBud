@@ -2,4 +2,8 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+
+    <color name="primary_buttons">#2b7fff</color>
+    <color name="text_procent_goal_atins_istoric">#15803d</color>
+    <color name="text_procent_goal_neatins_istoric">#2563eb</color>
 </resources>
