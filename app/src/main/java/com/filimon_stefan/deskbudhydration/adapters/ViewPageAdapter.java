@@ -7,7 +7,7 @@ import androidx.viewpager2.adapter.FragmentStateAdapter;
 
 import com.filimon_stefan.deskbudhydration.fragments.FragmentCalculator;
 import com.filimon_stefan.deskbudhydration.fragments.FragmentDailyGoal;
-import com.filimon_stefan.deskbudhydration.fragments.FragmentIstoric;
+import com.filimon_stefan.deskbudhydration.fragments.FragmentHistory;
 
 public class ViewPageAdapter extends FragmentStateAdapter {
     public ViewPageAdapter(@NonNull FragmentActivity activity){
@@ -21,7 +21,7 @@ public class ViewPageAdapter extends FragmentStateAdapter {
             case 0:
                 return new FragmentDailyGoal();
             case 1:
-                return new FragmentIstoric();
+                return new FragmentHistory();
             case 2:
                 return new FragmentCalculator();
             default:

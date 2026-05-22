@@ -115,4 +115,61 @@ public class PrefsHelper {
         salveazaIstoric(istoric);
     }
 
+    // Reseteaza goal-ul la 12 noaptea
+    public void verificaNouaZi(){
+        java.time.LocalDate azi = java.time.LocalDate.now();
+        String dataAzi = azi.toString();
+        String dataZiPrecedenta = getZiPrecedenta();
+
+        if(dataZiPrecedenta.isEmpty()){
+            setZiPrecedenta(dataAzi);
+            return;
+        }
+
+        if (dataZiPrecedenta.equals(dataAzi)){
+            return;
+        }
+
+        reseteazaZi(getMlBautiAzi(), dataZiPrecedenta);
+        reseteazaMlBautiAzi();
+        setZiPrecedenta(dataAzi);
+    }
+
+    private void reseteazaZi(int mlBauti, String dataZiPrecedenta){
+        if (mlBauti>0){
+            java.time.LocalDate dataVeche = java.time.LocalDate.parse(dataZiPrecedenta);
+            String dataFormatata = formateazaData(dataVeche);
+
+            ZiIstoric zi = new ZiIstoric(dataZiPrecedenta, dataFormatata, mlBauti, getGoal());
+            adaugaZiInIstoric(zi);
+        }
+    }
+
+    private static String formateazaData(java.time.LocalDate dataNonFormatata){
+        int zi = dataNonFormatata.getDayOfMonth();
+        String sufixData;
+        if (zi >= 11 && zi <= 13){
+            sufixData = "th";
+        }else {
+            switch (zi % 10){
+                case 1:
+                    sufixData = "st";
+                    break;
+                case 2:
+                    sufixData = "nd";
+                    break;
+                case 3:
+                    sufixData = "rd";
+                    break;
+                default:
+                    sufixData = "th";
+                    break;
+            }
+        }
+
+        String luna = dataNonFormatata.format(java.time.format.DateTimeFormatter.ofPattern("MMMM"));
+
+        return luna + " " + zi + sufixData + " " + dataNonFormatata.getYear();
+    }
+
 }
