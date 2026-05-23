@@ -44,10 +44,8 @@ public class FragmentHistory extends Fragment {
 
         rvIstoric = view.findViewById(R.id.rv_istoric);
         tvIstoricGol = view.findViewById(R.id.tv_istoric_gol);
-        Button btnDebug = view.findViewById(R.id.btn_debug_adauga_zi);
 
         rvIstoric.setLayoutManager(new LinearLayoutManager(requireContext()));
-        btnDebug.setOnClickListener(v -> adaugaZiTest());
     }
 
     @Override

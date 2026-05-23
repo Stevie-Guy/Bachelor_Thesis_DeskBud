@@ -80,6 +80,7 @@ public class FragmentDailyGoal extends Fragment {
     @Override
     public void onResume(){
         super.onResume();
+        prefs.verificaNouaZi();
         // Actualizam UI atunci cand userul schimba de la un tab la altul
         refreshUI();
     }

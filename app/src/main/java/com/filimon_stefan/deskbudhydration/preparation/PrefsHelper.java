@@ -136,13 +136,11 @@ public class PrefsHelper {
     }
 
     private void reseteazaZi(int mlBauti, String dataZiPrecedenta){
-        if (mlBauti>0){
-            java.time.LocalDate dataVeche = java.time.LocalDate.parse(dataZiPrecedenta);
-            String dataFormatata = formateazaData(dataVeche);
+        java.time.LocalDate dataVeche = java.time.LocalDate.parse(dataZiPrecedenta);
+        String dataFormatata = formateazaData(dataVeche);
 
-            ZiIstoric zi = new ZiIstoric(dataZiPrecedenta, dataFormatata, mlBauti, getGoal());
-            adaugaZiInIstoric(zi);
-        }
+        ZiIstoric zi = new ZiIstoric(dataZiPrecedenta, dataFormatata, mlBauti, getGoal());
+        adaugaZiInIstoric(zi);
     }
 
     private static String formateazaData(java.time.LocalDate dataNonFormatata){
