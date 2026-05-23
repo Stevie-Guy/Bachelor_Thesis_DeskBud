@@ -44,10 +44,10 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="12dp"
-            app:cardBackgroundColor="#eff7ff"
+            app:cardBackgroundColor="@color/background_card_goal_neatins"
             app:cardCornerRadius="16dp"
             app:cardElevation="0dp"
-            app:strokeColor="#bedbff">
+            app:strokeColor="@color/stroke_card_goal_neatins">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -68,16 +68,17 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/cantitate_consumata_goal"
-                        android:textColor="#155dfc"
+                        android:textColor="@color/text_procent_goal_neatins"
                         android:textSize="60sp"
-                        android:textStyle="bold" />
+                        android:textStyle="bold"/>
 
                     <TextView
+                        android:id="@+id/tv_unitate_masura_cant_consumata"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="14dp"
+                        android:layout_marginTop="15dp"
                         android:text="@string/unitate_masura_goal"
-                        android:textColor="#155dfc"
+                        android:textColor="@color/text_procent_goal_neatins"
                         android:textSize="24sp"
                         android:textStyle="bold" />
                 </LinearLayout>

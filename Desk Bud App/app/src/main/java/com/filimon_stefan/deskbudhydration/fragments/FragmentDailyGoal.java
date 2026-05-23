@@ -15,13 +15,16 @@ import androidx.fragment.app.Fragment;
 
 import com.filimon_stefan.deskbudhydration.preparation.PrefsHelper;
 import com.filimon_stefan.deskbudhydration.R;
+import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.textfield.TextInputEditText;
 
 
 public class FragmentDailyGoal extends Fragment {
 
     private TextView tvWarningSetGoal;
+    private MaterialCardView cardGoal;
     private TextView tvCantitateConsumata;
+    private TextView tvUnitateMasuraMl;
     private TextView tvGoal;
     private TextView tvProcentGoal;
     private ProgressBar progressGoal;
@@ -52,7 +55,9 @@ public class FragmentDailyGoal extends Fragment {
 
         tvWarningSetGoal = view.findViewById(R.id.tv_warning_goal_not_set);
 
+        cardGoal = view.findViewById(R.id.card_view_goal);
         tvCantitateConsumata = view.findViewById(R.id.tv_cantitate_consumata);
+        tvUnitateMasuraMl = view.findViewById(R.id.tv_unitate_masura_cant_consumata);
         tvGoal = view.findViewById(R.id.tv_goal);
         tvProcentGoal = view.findViewById(R.id.tv_procent_din_goal);
         progressGoal = view.findViewById(R.id.progress_goal);
@@ -95,10 +100,22 @@ public class FragmentDailyGoal extends Fragment {
         int mlAzi = prefs.getMlBautiAzi();
         int goal = prefs.getGoal();
 
+        if (mlAzi > goal){
+            tvCantitateConsumata.setTextColor(getResources().getColor(R.color.text_procent_goal_atins, null));
+            tvUnitateMasuraMl.setTextColor(getResources().getColor(R.color.text_procent_goal_atins, null));
+            cardGoal.setCardBackgroundColor(getResources().getColor(R.color.background_card_goal_atins,null));
+            cardGoal.setStrokeColor(getResources().getColor(R.color.stroke_card_goal_atins, null));
+        }else{
+            tvCantitateConsumata.setTextColor(getResources().getColor(R.color.text_procent_goal_neatins, null));
+            tvUnitateMasuraMl.setTextColor(getResources().getColor(R.color.text_procent_goal_neatins, null));
+            cardGoal.setCardBackgroundColor(getResources().getColor(R.color.background_card_goal_neatins,null));
+            cardGoal.setStrokeColor(getResources().getColor(R.color.stroke_card_goal_neatins, null));
+        }
         tvCantitateConsumata.setText(String.valueOf(mlAzi));
 
         float litri = goal / 1000f;
         String goalText = "Goal: " + goal + " ml (" + String.format("%.1f", litri) + "L)";
+
         tvGoal.setText(goalText);
 
         int procentGoal;
@@ -110,6 +127,19 @@ public class FragmentDailyGoal extends Fragment {
         tvProcentGoal.setText(procentGoal + "% din total");
 
         procentGoal = Math.min(procentGoal, 100);
+        if (procentGoal == 100){
+            progressGoal.setProgressDrawable(
+                    androidx.core.content.ContextCompat.getDrawable(
+                            requireContext(), R.drawable.progress_bar_goal_atins
+                    )
+            );
+        }else{
+            progressGoal.setProgressDrawable(
+                    androidx.core.content.ContextCompat.getDrawable(
+                            requireContext(), R.drawable.progress_bar_gradient
+                    )
+            );
+        }
         progressGoal.setProgress(procentGoal);
     }
 

@@ -55,28 +55,22 @@ public class FragmentCalculator extends Fragment {
         tvRezultatGoalLitri = view.findViewById(R.id.tv_rezultat_goal);
         tvRezultatGoalMililitri = view.findViewById(R.id.tv_rezultat_goal_ml);
 
-        // Persistenta cu ajutorul Shared Pref, daca deja exista valori
-        if (prefs.getGreutate() > 0){
-            tietGreutate.setText(String.valueOf(prefs.getGreutate()));
-        }
-
+        // Persistenta cu genului pentru UX design, se ia din prefs
         if (!prefs.getGen().isEmpty()){
             genSelectat = prefs.getGen();
         }
 
         toggleButoaneGen();
 
-        if(prefs.aFolositCalculator()){
-            afiseazaRezultat(prefs.getGoal());
-        }
-        
         btnBarbat.setOnClickListener(v -> {
             genSelectat = "M";
+            prefs.setGen(genSelectat);
             toggleButoaneGen();
         });
 
         btnFemeie.setOnClickListener(v -> {
             genSelectat = "F";
+            prefs.setGen(genSelectat);
             toggleButoaneGen();
         });
 

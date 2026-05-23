@@ -4,6 +4,10 @@
     <color name="white">#FFFFFFFF</color>
 
     <color name="primary_buttons">#2b7fff</color>
-    <color name="text_procent_goal_atins_istoric">#15803d</color>
-    <color name="text_procent_goal_neatins_istoric">#2563eb</color>
+    <color name="text_procent_goal_atins">#15803d</color>
+    <color name="text_procent_goal_neatins">#155dfc</color>
+    <color name="stroke_card_goal_atins">#BBF7D0</color>
+    <color name="stroke_card_goal_neatins">#bedbff</color>
+    <color name="background_card_goal_atins">#DCFCE7</color>
+    <color name="background_card_goal_neatins">#eff7ff</color>
 </resources>

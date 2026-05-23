@@ -52,10 +52,10 @@ public class IstoricAdapter extends RecyclerView.Adapter<IstoricAdapter.IstoricV
 
         if(zi.esteGoalulZileiAtins()){
             holder.tvProcent.setBackgroundResource(R.drawable.istoric_procent_atins);
-            holder.tvProcent.setTextColor(holder.itemView.getContext().getColor(R.color.text_procent_goal_atins_istoric));
+            holder.tvProcent.setTextColor(holder.itemView.getContext().getColor(R.color.text_procent_goal_atins));
         }else{
             holder.tvProcent.setBackgroundResource(R.drawable.istoric_procent_neatins);
-            holder.tvProcent.setTextColor(holder.itemView.getContext().getColor(R.color.text_procent_goal_neatins_istoric));
+            holder.tvProcent.setTextColor(holder.itemView.getContext().getColor(R.color.text_procent_goal_neatins));
         }
     }
 

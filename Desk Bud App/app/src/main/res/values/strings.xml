@@ -32,7 +32,7 @@
     <string name="titlu_calculator">Calculator Hidratare</string>
     <string name="label_greutate">Greutate (kg)</string>
     <string name="placeholder_greutate">ex: 80.6</string>
-    <string name="label_alege_sex">Sex</string>
+    <string name="label_alege_sex">Gen</string>
     <string name="buton_barbat">♂ Bărbat</string>
     <string name="buton_femeie">♀ Femeie</string>
     <string name="descriere_btn_info_calculator">Informații despre formula de calcul</string>

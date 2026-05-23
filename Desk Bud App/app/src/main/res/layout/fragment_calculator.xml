@@ -98,7 +98,7 @@
                             android:text="@string/buton_barbat"
                             android:textAllCaps="false"
                             android:textSize="14sp"
-                            android:backgroundTint="#2b7fff"
+                            android:backgroundTint="@color/primary_buttons"
                             android:textColor="#FFFFFF"
                             app:strokeColor="#2b7fff"
                             app:strokeWidth="1dp"
@@ -119,9 +119,9 @@
                             android:textAllCaps="false"
                             android:textSize="14sp"
                             android:backgroundTint="#FFFFFF"
-                            android:textColor="#2b7fff"
+                            android:textColor="@color/primary_buttons"
                             app:cornerRadius="10dp"
-                            app:strokeColor="#2b7fff"
+                            app:strokeColor="@color/primary_buttons"
                             app:strokeWidth="1dp"
                             style="@style/Widget.MaterialComponents.Button.OutlinedButton"/>
 
