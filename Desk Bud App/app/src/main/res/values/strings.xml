@@ -19,10 +19,10 @@
     <string name="placeholder_apa_custom">ex: 200</string>
     <string name="btn_adauga">Adaugă</string>
     <string name="label_adauga_rapid">Adăugare Rapidă</string>
-    <string name="btn_100ml">💧\n100ml</string>
-    <string name="btn_250ml">💧\n250ml</string>
-    <string name="btn_500ml">💧\n500ml</string>
-    <string name="btn_1000ml">💧\n1000ml</string>
+    <string name="btn_100ml">100ml</string>
+    <string name="btn_250ml">250ml</string>
+    <string name="btn_500ml">500ml</string>
+    <string name="btn_1000ml">1000ml</string>
 
 <!--    Tab istoric-->
     <string name="titlu_istoric">Istoric</string>

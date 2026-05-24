@@ -100,16 +100,26 @@ public class FragmentDailyGoal extends Fragment {
         int mlAzi = prefs.getMlBautiAzi();
         int goal = prefs.getGoal();
 
-        if (mlAzi > goal){
+        if (mlAzi >= goal){
             tvCantitateConsumata.setTextColor(getResources().getColor(R.color.text_procent_goal_atins, null));
             tvUnitateMasuraMl.setTextColor(getResources().getColor(R.color.text_procent_goal_atins, null));
             cardGoal.setCardBackgroundColor(getResources().getColor(R.color.background_card_goal_atins,null));
             cardGoal.setStrokeColor(getResources().getColor(R.color.stroke_card_goal_atins, null));
+            progressGoal.setProgressDrawable(
+                    androidx.core.content.ContextCompat.getDrawable(
+                            requireContext(), R.drawable.progress_bar_goal_atins
+                    )
+            );
         }else{
             tvCantitateConsumata.setTextColor(getResources().getColor(R.color.text_procent_goal_neatins, null));
             tvUnitateMasuraMl.setTextColor(getResources().getColor(R.color.text_procent_goal_neatins, null));
             cardGoal.setCardBackgroundColor(getResources().getColor(R.color.background_card_goal_neatins,null));
             cardGoal.setStrokeColor(getResources().getColor(R.color.stroke_card_goal_neatins, null));
+            progressGoal.setProgressDrawable(
+                    androidx.core.content.ContextCompat.getDrawable(
+                            requireContext(), R.drawable.progress_bar_gradient
+                    )
+            );
         }
         tvCantitateConsumata.setText(String.valueOf(mlAzi));
 
@@ -120,26 +130,14 @@ public class FragmentDailyGoal extends Fragment {
 
         int procentGoal;
         if (goal > 0){
-            procentGoal = Math.round((mlAzi * 100f) / goal);
+            procentGoal = (int) Math.floor((mlAzi * 100f) / goal);
         }else {
             procentGoal = 0;
         }
         tvProcentGoal.setText(procentGoal + "% din total");
 
         procentGoal = Math.min(procentGoal, 100);
-        if (procentGoal == 100){
-            progressGoal.setProgressDrawable(
-                    androidx.core.content.ContextCompat.getDrawable(
-                            requireContext(), R.drawable.progress_bar_goal_atins
-                    )
-            );
-        }else{
-            progressGoal.setProgressDrawable(
-                    androidx.core.content.ContextCompat.getDrawable(
-                            requireContext(), R.drawable.progress_bar_gradient
-                    )
-            );
-        }
+
         progressGoal.setProgress(procentGoal);
     }
 
