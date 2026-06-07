@@ -1,3 +1,38 @@
-# Default ignored files
+# Python
+venv/
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# Secrete
+.env
+*.env
+
+# Date locale
+data/faces/*.pkl
+data/*.db
+data/user_settings.json
+
+# Modele descarcate
+*.onnx
+*.gguf
+
+# Audio temporar
+*.wav
+!tests/*.wav  
+
+# Loguri
+*.log
+
+# Default
 /shelf/
 /workspace.xml
