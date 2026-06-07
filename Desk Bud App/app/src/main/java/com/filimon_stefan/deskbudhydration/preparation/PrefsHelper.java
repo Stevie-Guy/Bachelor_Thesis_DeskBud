@@ -38,7 +38,7 @@ public class PrefsHelper {
         prefs.edit().putFloat(KEY_GREUTATE, greutate).apply();
     }
 
-//    gen
+//    GEN
     public String getGen(){
         return prefs.getString(KEY_GEN, "");
     }
