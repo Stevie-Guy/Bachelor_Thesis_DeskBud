@@ -41,6 +41,7 @@ RESET_COMMANDS = {
     "new conversation",
     "open a new chat",
 }
+MODEL_EXPLICATIV = {"detail", "details", "explain"}
 
 
 class DeskBud:
@@ -85,7 +86,7 @@ class DeskBud:
                     break
 
                 if prompt_utilizator.lower() in RESET_COMMANDS:
-                    self._reseteaza_istoric()
+                    self.reseteaza_istoric()
                     print("\nIstoric resetat.\n")
                     continue
 
