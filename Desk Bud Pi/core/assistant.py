@@ -13,7 +13,11 @@ SYSTEM_PROMPT = (
 MODEL_RAPID = "llama3.2:1b"
 MODEL_SMART = "llama3.2:3b"
 
-LIMITE_TOKENI = {MODEL_RAPID: 100, MODEL_SMART: 400}
+LIMITE_TOKENI = {
+    MODEL_RAPID: 100,
+    MODEL_SMART: 200,
+}
+LIMITA_TOKENI_EXPLICATIV = 400
 
 EXIT_COMMANDS = {
     "exit",
@@ -41,7 +45,13 @@ RESET_COMMANDS = {
     "new conversation",
     "open a new chat",
 }
-MODEL_EXPLICATIV = {"detail", "details", "explain"}
+CUVINTE_EXPLICATIVE = (
+    "explain",
+    "detail",
+    "details",
+    "elaborate",
+    "in depth",
+)
 
 
 class DeskBud:
@@ -100,8 +110,12 @@ class DeskBud:
         model = self.router.alege_model(prompt=prompt_utilizator)
         motor = self.motoare_slm[model]
 
+        if any(cuvant in prompt_utilizator.lower() for cuvant in CUVINTE_EXPLICATIVE):
+            limita = LIMITA_TOKENI_EXPLICATIV
+        else:
+            limita = LIMITE_TOKENI[model]
         eticheta = "rapid" if model == MODEL_RAPID else "smart"
-        print(f"DeskBud [{eticheta}]: ", end="", flush=True)
+        print(f"Model {eticheta}: ", end="", flush=True)
 
         t_start = time.perf_counter()
         timp_primul_token = None
@@ -109,7 +123,7 @@ class DeskBud:
 
         try:
             for token in motor.chat(
-                mesaj_utilizator=prompt_utilizator, num_tokens=LIMITE_TOKENI[model]
+                mesaj_utilizator=prompt_utilizator, num_tokens=limita
             ):
                 if timp_primul_token is None:
                     timp_primul_token = time.perf_counter() - t_start

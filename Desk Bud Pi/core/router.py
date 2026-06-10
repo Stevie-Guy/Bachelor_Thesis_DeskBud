@@ -35,6 +35,7 @@ class ModelRouter:
         "good evening",
         "good night",
         "how are you",
+        "how are you today",
         "what's up",
         "whats up",
         "please",
@@ -59,6 +60,10 @@ class ModelRouter:
         "weather",
         "remind",
         "reminder",
+        "detail",
+        "details",
+        "elaborate",
+        "in depth",
     )
 
     MAX_CUVINTE_PROMPT_SIMPLU = 4
