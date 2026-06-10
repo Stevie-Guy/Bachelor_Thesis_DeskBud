@@ -59,6 +59,9 @@ class SpeechToText:
         "thank you for joining us",
         "thanks so much",
         "thank you all",
+        "thanks for your time",
+        "thank you for your time",
+        "thanks",
         # Markeri de subtitrare
         "subtitles by the amara.org community",
         "subtitled by the amara.org community",

@@ -1,13 +1,14 @@
 import os
 import subprocess
 import tempfile
+import re
 
 from core.audio_io import AudioIO
 
 
 class TextToSpeech:
     PIPER_BIN = os.path.expanduser("~/piper/piper")
-    PIPER_MODEL = os.path.expanduser("~/piper/models/en_US-lessac-medium.onnx")
+    PIPER_MODEL = os.path.expanduser("~/piper/models/en_US-hfc_female-medium.onnx")
     TIMEOUT_SECUNDE = 30
 
     def __init__(self, audio_io: AudioIO):
@@ -17,8 +18,10 @@ class TextToSpeech:
         return os.path.isfile(self.PIPER_BIN) and os.path.isfile(self.PIPER_MODEL)
 
     def vorbeste(self, text: str):
+        text_curatat = re.sub(r"[*#_~`]", "", text)
+
         # Reda textul prin difuzor dupa sintetizare
-        if not text.strip():
+        if not text_curatat.strip():
             return
 
         with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as f:
@@ -33,7 +36,7 @@ class TextToSpeech:
                     "--output_file",
                     cale_wav,
                 ],
-                input=text,
+                input=text_curatat,
                 capture_output=True,
                 text=True,
                 timeout=self.TIMEOUT_SECUNDE,

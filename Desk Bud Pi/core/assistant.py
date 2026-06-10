@@ -3,6 +3,9 @@ import time
 
 from core.slm import MotorSLM
 from core.router import ModelRouter
+from core.audio_io import AudioIO
+from core.stt import SpeechToText
+from core.tts import TextToSpeech
 
 SYSTEM_PROMPT = (
     "You are DeskBud, a smart and friendly desk assistant. "
@@ -42,7 +45,11 @@ RESET_COMMANDS = {
     "clear conversation",
     "clear chat",
     "new chat",
+    "a new chat",
+    "the new chat",
     "new conversation",
+    "the new conversation",
+    "a new conversation",
     "open a new chat",
 }
 CUVINTE_EXPLICATIVE = (
@@ -52,6 +59,12 @@ CUVINTE_EXPLICATIVE = (
     "elaborate",
     "in depth",
 )
+SEMNE_SFARSIT = {
+    ".",
+    "!",
+    "?",
+    "\n",
+}
 
 
 class DeskBud:
@@ -62,6 +75,10 @@ class DeskBud:
         self.stare = self.STARE_IDLE
         self.timp_ultimul_prompt = None
         self.timeout_activ = 600
+
+        self.audio_io = AudioIO()
+        self.stt = SpeechToText()
+        self.tts = TextToSpeech(self.audio_io)
 
         self.istoric = []  # istoric comun intre toate modelele
 
@@ -77,32 +94,52 @@ class DeskBud:
     # ── lifecycle ──────────────────────────────────────────────────────────────
 
     def ruleaza(self):
-        if not self.verifica_modele():
+        if not self.verifica_componente():
             sys.exit(1)
 
-        self.pregateste_modele()
-        print(
-            "\nDeskBud is ready. Type your message ('exit' to quit, 'reset' to clear history).\n"
-        )
+        self.pregateste_componente()
+        print("\nDeskBud is ready. Try to ask something!\n")
+
+        mesaj_pornire = "DeskBud ready. I'm listening."
+        self.tts.vorbeste(mesaj_pornire)
 
         try:
             while True:
-                prompt_utilizator = self.citeste_input()
+                prompt_utilizator = self.asculta()
                 if not prompt_utilizator:
+                    print("Utilizatorul nu a vorbit sau Whisper a halucinat.\n")
                     continue
 
-                if prompt_utilizator.lower() in EXIT_COMMANDS:
-                    print("\nDeskBud: Bye! Have a great day.\n")
+                print(f"Prompt auzit: {prompt_utilizator}")
+                prompt_lower = prompt_utilizator.lower().rstrip(".!?,;:")
+
+                if prompt_lower in EXIT_COMMANDS:
+                    mesaj_iesire = "Have a great day. Goodbye!"
+                    print(f"DeskBud: {mesaj_iesire}.")
+                    self.tts.vorbeste(mesaj_iesire)
                     break
 
                 if prompt_utilizator.lower() in RESET_COMMANDS:
                     self.reseteaza_istoric()
-                    print("\nIstoric resetat.\n")
+                    mesaj_reset = "New conversation started."
+                    print(f"  → {mesaj_reset}\n")
+                    self.tts.vorbeste(mesaj_reset)
                     continue
 
                 self.gestioneaza_mesaje(prompt_utilizator)
         except KeyboardInterrupt:
             print("\n\nDeskBud: Shutting down. Bye!\n")
+
+    def asculta(self) -> str:
+        # Asculta pana cand userul termina de vorbit, returneaza text transcris
+        print("Listening...")
+        audio = self.audio_io.inregistreaza()
+
+        if len(audio) == 0:
+            return ""
+
+        print("Transcribing...")
+        return self.stt.transcrie(audio)
 
     # ── flux principal ─────────────────────────────────────────────────────────
 
@@ -121,6 +158,8 @@ class DeskBud:
         timp_primul_token = None
         nr_tokeni = 0
 
+        propozitie_curenta = ""
+
         try:
             for token in motor.chat(
                 mesaj_utilizator=prompt_utilizator, num_tokens=limita
@@ -128,7 +167,19 @@ class DeskBud:
                 if timp_primul_token is None:
                     timp_primul_token = time.perf_counter() - t_start
                 print(token, end="", flush=True)
+
+                # Adaugam token-ul la propozitia curenta
+                propozitie_curenta += token
+
+                if any(semn in token for semn in SEMNE_SFARSIT):
+                    if propozitie_curenta.strip():
+                        self.tts.vorbeste(propozitie_curenta.strip())
+                    # Golim propozitia pentru a incepe urmatoarea
+                    propozitie_curenta = ""
+
                 nr_tokeni += 1
+            if propozitie_curenta.strip():
+                self.tts.vorbeste(propozitie_curenta.strip())
         except Exception as e:
             print(f"\n !! A aparut o eroare: {e}")
             return
@@ -142,25 +193,42 @@ class DeskBud:
         )
 
     # ── helpers ────────────────────────────────────────────────────────────────
-    def citeste_input(self) -> str:
-        try:
-            return input("You: ").strip()
-        except EOFError as e:
-            print(f"X A aparut o eroare la citire: {e}")
-            return "exit"
+    # def citeste_input(self) -> str:
+    #     try:
+    #         return input("You: ").strip()
+    #     except EOFError as e:
+    #         print(f"X A aparut o eroare la citire: {e}")
+    #         return "exit"
 
-    def verifica_modele(self) -> bool:
-        print("Verifying models installation.")
+    def verifica_componente(self) -> bool:
+        print("Verifying components...")
+
+        if not self.audio_io.este_disponibil():
+            print("  X AudioIO — microfon sau difuzor lipsa")
+            return False
+
+        if not self.tts.este_disponibil():
+            print("  X TTS Piper — binar sau model lipsa")
+            return False
+
         for nume, motor in self.motoare_slm.items():
-            if motor.este_disponibil():
-                print(f"Modelul {nume} merge")
-            else:
+            if not motor.este_disponibil():
                 print(f"X Modelul {nume} nu a fost gasit")
                 return False
+
         return True
 
-    def pregateste_modele(self):
+    def pregateste_componente(self):
         print("\nWelcome back at the desk! Waking up DeskBud.")
+
+        t = time.perf_counter()
+        self.stt.incarca_model()
+        print(f"  ✓ Whisper STT in {time.perf_counter() - t:.2f}s")
+
+        t = time.perf_counter()
+        self.audio_io.incarca_vad()
+        print(f"  ✓ Silero VAD in {time.perf_counter() - t:.2f}s")
+
         for nume, motor in self.motoare_slm.items():
             t = time.perf_counter()
             motor.incarcare_model_in_ram()
