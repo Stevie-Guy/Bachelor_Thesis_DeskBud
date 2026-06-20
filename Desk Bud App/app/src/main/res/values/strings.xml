@@ -1,6 +1,6 @@
 <resources>
 <!--    Manifest-->
-    <string name="app_name">Desk Bud Hydration</string>
+    <string name="app_name">DeskBud Hydra</string>
 
 <!--    Main activity-->
     <string name="motto_aplicatie">Stay hydrated with your new buddy!</string>

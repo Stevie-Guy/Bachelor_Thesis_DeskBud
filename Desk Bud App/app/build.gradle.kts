@@ -3,13 +3,13 @@ plugins {
 }
 
 android {
-    namespace = "com.filimon_stefan.deskbudhydration"
+    namespace = "com.filimon_stefan.deskbudhydra"
     compileSdk {
         version = release(36)
     }
 
     defaultConfig {
-        applicationId = "com.filimon_stefan.deskbudhydration"
+        applicationId = "com.filimon_stefan.deskbudhydra"
         minSdk = 26
         targetSdk = 36
         versionCode = 1

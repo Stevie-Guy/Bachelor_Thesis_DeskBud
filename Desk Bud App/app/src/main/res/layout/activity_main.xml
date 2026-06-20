@@ -20,14 +20,14 @@
         <ImageView
             android:layout_width="34dp"
             android:layout_height="34dp"
-            android:src="@drawable/ic_droplet"
-            android:layout_marginEnd="8dp"/>
+            android:layout_marginEnd="4dp"
+            android:src="@drawable/ic_droplet" />
 
         <TextView
             android:id="@+id/titluAplicatie"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Desk Bud Hydration"
+            android:text="DeskBud Hydra"
             android:textSize="30sp"
             android:textStyle="bold"
             android:textColor="#1e2939"

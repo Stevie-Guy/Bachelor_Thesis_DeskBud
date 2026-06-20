@@ -1,16 +1,20 @@
 import sys
 import time
+import os
 
 from core.slm import MotorSLM
 from core.router import ModelRouter
 from core.audio_io import AudioIO
 from core.stt import SpeechToText
 from core.tts import TextToSpeech
+from core.wake_word import DetectorWakeWord
 
 SYSTEM_PROMPT = (
-    "You are DeskBud, a smart and friendly desk assistant. "
-    "Always reply in English. "
-    "Never ramble. If asked about calendars, tasks, or reminders, extract key info clearly. "
+    "You are DeskBud, a friendly desk assistant that helps with general questions, "
+    "ideas, conversation, calendar, and reminders. "
+    "Always reply in English with spoken words only — no asterisks, no roleplay, no action descriptions. "
+    "Keep answers concise, unless told otherwise. "
+    "If a question is unclear or fragmented, ask the user to repeat in one short sentence."
 )
 
 MODEL_RAPID = "llama3.2:1b"
@@ -25,9 +29,12 @@ LIMITA_TOKENI_EXPLICATIV = 400
 EXIT_COMMANDS = {
     "exit",
     "quit",
+    "quick",
+    "quint",
     "bye",
     "goodbye",
     "stop",
+    "so",
     "shut up",
     "quiet",
     "silence",
@@ -63,22 +70,25 @@ SEMNE_SFARSIT = {
     ".",
     "!",
     "?",
+    '"',
     "\n",
 }
+CALE_SUNET_TREZIRE = "data/sounds/trezire.wav"
 
 
 class DeskBud:
     STARE_IDLE = "idle"
     STARE_ACTIV = "activ"
+    TIMEOUT_ACTIV = 300
 
     def __init__(self):
         self.stare = self.STARE_IDLE
         self.timp_ultimul_prompt = None
-        self.timeout_activ = 600
 
         self.audio_io = AudioIO()
         self.stt = SpeechToText()
         self.tts = TextToSpeech(self.audio_io)
+        self.detector_wakeword = DetectorWakeWord(self.audio_io)
 
         self.istoric = []  # istoric comun intre toate modelele
 
@@ -98,37 +108,65 @@ class DeskBud:
             sys.exit(1)
 
         self.pregateste_componente()
-        print("\nDeskBud is ready. Try to ask something!\n")
 
-        mesaj_pornire = "DeskBud ready. I'm listening."
-        self.tts.vorbeste(mesaj_pornire)
+        print("\nDeskBud is ready.\n")
+        self.tts.vorbeste("DeskBud ready.")
 
         try:
             while True:
-                prompt_utilizator = self.asculta()
-                if not prompt_utilizator:
-                    print("Utilizatorul nu a vorbit sau Whisper a halucinat.\n")
-                    continue
-
-                print(f"Prompt auzit: {prompt_utilizator}")
-                prompt_lower = prompt_utilizator.lower().rstrip(".!?,;:")
-
-                if prompt_lower in EXIT_COMMANDS:
-                    mesaj_iesire = "Have a great day. Goodbye!"
-                    print(f"DeskBud: {mesaj_iesire}.")
-                    self.tts.vorbeste(mesaj_iesire)
-                    break
-
-                if prompt_utilizator.lower() in RESET_COMMANDS:
-                    self.reseteaza_istoric()
-                    mesaj_reset = "New conversation started."
-                    print(f"  → {mesaj_reset}\n")
-                    self.tts.vorbeste(mesaj_reset)
-                    continue
-
-                self.gestioneaza_mesaje(prompt_utilizator)
+                if self.stare is self.STARE_ACTIV:
+                    self.mod_ascultare()
+                else:
+                    self.mod_idle()
         except KeyboardInterrupt:
             print("\n\nDeskBud: Shutting down. Bye!\n")
+
+    def mod_idle(self):
+        print(f"\n[STARE = {self.stare}] Idle - astept wake word...")
+
+        t_start = time.perf_counter()
+        self.detector_wakeword.asteapta_trezire()
+        durata = time.perf_counter() - t_start
+
+        print(f"[Wake word detectat dupa {durata:.2f}s]")
+        self.reda_sunet_trezire()
+        self.stare = self.STARE_ACTIV
+
+    def mod_ascultare(self):
+        self.stare = self.STARE_ACTIV
+        self.timp_ultimul_prompt = time.perf_counter()
+
+        while True:
+            timp_inactiv = time.perf_counter() - self.timp_ultimul_prompt
+            if timp_inactiv > self.TIMEOUT_ACTIV:
+                self.stare = self.STARE_IDLE
+                break
+
+            prompt_utilizator = self.asculta()
+            if not prompt_utilizator:
+                continue
+
+            print(f"Prompt auzit: {prompt_utilizator}")
+            prompt_lower = prompt_utilizator.lower().rstrip(".!?,;:")
+
+            if prompt_lower in EXIT_COMMANDS:
+                mesaj_iesire = "Taking a break!"
+                print(f"DeskBud: {mesaj_iesire}.")
+                self.tts.vorbeste(mesaj_iesire)
+                time.sleep(1)
+                self.stare = self.STARE_IDLE
+                break
+
+            if prompt_utilizator.lower() in RESET_COMMANDS:
+                self.reseteaza_istoric()
+                mesaj_reset = "New conversation started."
+                print(f"{mesaj_reset}\n")
+                self.tts.vorbeste(mesaj_reset)
+                self.timp_ultimul_prompt = time.perf_counter()
+                continue
+
+            self.gestioneaza_mesaje(prompt_utilizator)
+            self.timp_ultimul_prompt = time.perf_counter()
 
     def asculta(self) -> str:
         # Asculta pana cand userul termina de vorbit, returneaza text transcris
@@ -216,6 +254,10 @@ class DeskBud:
                 print(f"X Modelul {nume} nu a fost gasit")
                 return False
 
+        if not os.path.isfile(DetectorWakeWord.CALE_MODEL):
+            print(f"X Wake word model lipsa: {DetectorWakeWord.CALE_MODEL}")
+            return False
+
         return True
 
     def pregateste_componente(self):
@@ -223,16 +265,25 @@ class DeskBud:
 
         t = time.perf_counter()
         self.stt.incarca_model()
-        print(f"  ✓ Whisper STT in {time.perf_counter() - t:.2f}s")
+        print(f"Whisper STT in {time.perf_counter() - t:.2f}s")
 
         t = time.perf_counter()
         self.audio_io.incarca_vad()
-        print(f"  ✓ Silero VAD in {time.perf_counter() - t:.2f}s")
+        print(f"Silero VAD in {time.perf_counter() - t:.2f}s")
 
         for nume, motor in self.motoare_slm.items():
             t = time.perf_counter()
             motor.incarcare_model_in_ram()
             print(f"Model {nume} incarcat in {time.perf_counter() - t:.2f}s")
+
+        t = time.perf_counter()
+        self.detector_wakeword.incarca_model()
+        print(f"Wake word model in {time.perf_counter() - t:.2f}s")
+
+    def reda_sunet_trezire(self):
+        """Reda sunetul de confirmare pentru WW"""
+        if os.path.isfile(CALE_SUNET_TREZIRE):
+            self.audio_io.redare_wav(CALE_SUNET_TREZIRE)
 
     def reseteaza_istoric(self):
         self.istoric.clear()

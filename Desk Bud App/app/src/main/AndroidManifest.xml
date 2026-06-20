@@ -12,7 +12,7 @@
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
-        android:icon="@drawable/water_bottle_logo"
+        android:icon="@mipmap/logo_deskbud_hydra_round"
         android:label="@string/app_name"
         android:roundIcon="@drawable/water_bottle_logo"
         android:supportsRtl="true"
@@ -43,6 +43,12 @@
 
         </receiver>
 
+        <receiver
+            android:name=".notifications.NotificareDimineataReceiver"
+            android:exported="false"/>
+        <receiver
+            android:name=".notifications.NotificareInactivitateReceiver"
+            android:exported="false"/>
     </application>
 
 </manifest>

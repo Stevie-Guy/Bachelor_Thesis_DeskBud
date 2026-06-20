@@ -149,3 +149,28 @@ class AudioIO:
         if len(audio) < lungime_dorita:
             return np.pad(audio, (0, lungime_dorita - len(audio)))
         return audio[:lungime_dorita]
+
+    def deschide_stream_microfon(self, lungime_16k: int = None):
+        # Returneaza un context manager pentru un stream de microfon constinuu
+        if lungime_16k is None:
+            lungime_16k = self.VAD_CHUNK_SAMPLES_16K
+
+        chunk_44k = int(lungime_16k * self.SAMPLE_RATE_INPUT / self.SAMPLE_RATE_VAD)
+        return sd.InputStream(
+            samplerate=self.SAMPLE_RATE_INPUT,
+            channels=1,
+            device=self.id_microfon,
+            dtype="float32",
+            blocksize=chunk_44k,
+        )
+
+    def citeste_chunk(self, stream, lungime_16k: int = None):
+        # Citeste chunk de la mic, face resample si ajusteaza la marimea ceruta
+        if lungime_16k is None:
+            lungime_16k = self.VAD_CHUNK_SAMPLES_16K
+
+        chunk_44k = int(lungime_16k * self.SAMPLE_RATE_INPUT / self.SAMPLE_RATE_VAD)
+        bloc, _ = stream.read(chunk_44k)
+        bloc = bloc.flatten()
+        bloc_16k = self.resample_la_16k(bloc)
+        return self.ajusteaza_lungime(bloc_16k, lungime_16k)
