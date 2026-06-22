@@ -18,40 +18,41 @@ class TextToSpeech:
         return os.path.isfile(self.PIPER_BIN) and os.path.isfile(self.PIPER_MODEL)
 
     def vorbeste(self, text: str):
-        text_curatat = re.sub(r"[*#_~`]", "", text)
+        with self.audio_io.lock_microfon:
+            text_curatat = re.sub(r"[*#_~`]", "", text)
 
-        # Reda textul prin difuzor dupa sintetizare
-        if not text_curatat.strip():
-            return
-
-        with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as f:
-            cale_wav = f.name
-
-        try:
-            rezultat = subprocess.run(
-                [
-                    self.PIPER_BIN,
-                    "--model",
-                    self.PIPER_MODEL,
-                    "--output_file",
-                    cale_wav,
-                ],
-                input=text_curatat,
-                capture_output=True,
-                text=True,
-                timeout=self.TIMEOUT_SECUNDE,
-            )
-
-            if rezultat.returncode != 0:
-                print(f"X Piper eroare: {rezultat.stderr.strip()}")
+            # Reda textul prin difuzor dupa sintetizare
+            if not text_curatat.strip():
                 return
 
-            self.audio_io.redare_wav(cale_wav)
+            with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as f:
+                cale_wav = f.name
 
-        except subprocess.TimeoutExpired:
-            print(f"X Piper timeout (peste {self.TIMEOUT_SECUNDE}s)")
-        except Exception as e:
-            print(f"X Eroare TTS: {e}")
-        finally:
-            if os.path.exists(cale_wav):
-                os.remove(cale_wav)
+            try:
+                rezultat = subprocess.run(
+                    [
+                        self.PIPER_BIN,
+                        "--model",
+                        self.PIPER_MODEL,
+                        "--output_file",
+                        cale_wav,
+                    ],
+                    input=text_curatat,
+                    capture_output=True,
+                    text=True,
+                    timeout=self.TIMEOUT_SECUNDE,
+                )
+
+                if rezultat.returncode != 0:
+                    print(f"X Piper eroare: {rezultat.stderr.strip()}")
+                    return
+
+                self.audio_io.redare_wav(cale_wav)
+
+            except subprocess.TimeoutExpired:
+                print(f"X Piper timeout (peste {self.TIMEOUT_SECUNDE}s)")
+            except Exception as e:
+                print(f"X Eroare TTS: {e}")
+            finally:
+                if os.path.exists(cale_wav):
+                    os.remove(cale_wav)

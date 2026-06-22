@@ -19,6 +19,8 @@ public class PrefsHelper {
     private static final String KEY_ML_GOAL = "ml_baut_azi";
     private static final String KEY_DATA_ZI_PRECEDENTA = "data_zi_precedenta";
     private static final String KEY_ISTORIC = "istoric_zile";
+    private static final String KEY_IP_PI = "pi_ip";
+    private static final String DEFAULT_PI_IP = "192.168.1.137";
 
     private final SharedPreferences prefs;
     private final Gson gson;
@@ -92,6 +94,14 @@ public class PrefsHelper {
 
     public void setZiPrecedenta(String data){
         prefs.edit().putString(KEY_DATA_ZI_PRECEDENTA, data).apply();
+    }
+
+    public String getPiIp(){
+        return prefs.getString(KEY_IP_PI, DEFAULT_PI_IP);
+    }
+
+    public void setPiIp(String ip){
+        prefs.edit().putString(KEY_IP_PI, ip).apply();
     }
 
 //    ISTORIC ZILE

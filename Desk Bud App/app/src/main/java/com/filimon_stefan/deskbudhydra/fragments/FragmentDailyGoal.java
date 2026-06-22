@@ -1,6 +1,7 @@
 package com.filimon_stefan.deskbudhydra.fragments;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,6 +14,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
+import com.filimon_stefan.deskbudhydra.network.ApiClient;
+import com.filimon_stefan.deskbudhydra.network.HydrationApiApp;
 import com.filimon_stefan.deskbudhydra.notifications.NotificationScheduler;
 import com.filimon_stefan.deskbudhydra.preparation.PrefsHelper;
 import com.filimon_stefan.deskbudhydra.R;
@@ -39,6 +42,7 @@ public class FragmentDailyGoal extends Fragment {
     private Button btnSterge;
 
     private PrefsHelper prefs;
+    private HydrationApiApp apiService;
 
     @Nullable
     @Override
@@ -53,6 +57,7 @@ public class FragmentDailyGoal extends Fragment {
         super.onViewCreated(view,savedInstanceState);
 
         this.prefs = new PrefsHelper(requireContext());
+        this.apiService = new HydrationApiApp(requireContext());
 
         tvWarningSetGoal = view.findViewById(R.id.tv_warning_goal_not_set);
 
@@ -144,6 +149,8 @@ public class FragmentDailyGoal extends Fragment {
         }
 
         progressGoal.setProgress(procentGoal);
+
+        sincronizeazaNivelApaCuPi();
     }
 
     private void adaugaApa(int ml){
@@ -216,5 +223,22 @@ public class FragmentDailyGoal extends Fragment {
 
         scadeApa(mlSterge);
         tietStergeApa.setText("");
+    }
+
+    private void sincronizeazaNivelApaCuPi(){
+        int mlAzi = prefs.getMlBautiAzi();
+        int goal = prefs.getGoal();
+
+        apiService.trimiteStatus(mlAzi, goal, new ApiClient.ApiCallback() {
+            @Override
+            public void onSuccess(String response) {
+                Log.d("SyncPi", "Status sincronizat cu Pi. SUCCES");
+            }
+
+            @Override
+            public void onFail(String eroare) {
+                Log.e("SyncPi", "Sincronizare esuata. FAIL" + eroare);
+            }
+        });
     }
 }

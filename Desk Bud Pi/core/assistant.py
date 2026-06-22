@@ -8,6 +8,7 @@ from core.audio_io import AudioIO
 from core.stt import SpeechToText
 from core.tts import TextToSpeech
 from core.wake_word import DetectorWakeWord
+from features.hydra_server import HydraServer
 
 SYSTEM_PROMPT = (
     "You are DeskBud, a friendly desk assistant that helps with general questions, "
@@ -31,6 +32,7 @@ EXIT_COMMANDS = {
     "quit",
     "quick",
     "quint",
+    "quill",
     "bye",
     "goodbye",
     "stop",
@@ -89,6 +91,7 @@ class DeskBud:
         self.stt = SpeechToText()
         self.tts = TextToSpeech(self.audio_io)
         self.detector_wakeword = DetectorWakeWord(self.audio_io)
+        self.hydra_server = HydraServer(audio_io=self.audio_io, tts=self.tts)
 
         self.istoric = []  # istoric comun intre toate modelele
 
@@ -108,6 +111,7 @@ class DeskBud:
             sys.exit(1)
 
         self.pregateste_componente()
+        self.hydra_server.porneste()
 
         print("\nDeskBud is ready.\n")
         self.tts.vorbeste("DeskBud ready.")
@@ -140,6 +144,8 @@ class DeskBud:
             timp_inactiv = time.perf_counter() - self.timp_ultimul_prompt
             if timp_inactiv > self.TIMEOUT_ACTIV:
                 self.stare = self.STARE_IDLE
+                print("DeskBud: Going idle!")
+                self.tts.vorbeste("Entering idle mode!")
                 break
 
             prompt_utilizator = self.asculta()
@@ -170,7 +176,7 @@ class DeskBud:
 
     def asculta(self) -> str:
         # Asculta pana cand userul termina de vorbit, returneaza text transcris
-        print("Listening...")
+        print(f"[LISTENING - {time.strftime('%H:%M:%S')}]")
         audio = self.audio_io.inregistreaza()
 
         if len(audio) == 0:

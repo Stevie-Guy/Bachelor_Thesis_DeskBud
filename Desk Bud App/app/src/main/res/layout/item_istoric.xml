@@ -21,7 +21,7 @@
 
         <TextView
             android:id="@+id/tv_data_istoric"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:text="@string/data_zi_istoric"
             android:textSize="15sp"

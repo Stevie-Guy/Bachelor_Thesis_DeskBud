@@ -1,6 +1,7 @@
 import numpy as np
 import sounddevice as sd
 import soundfile as sf
+import threading
 
 
 class AudioIO:
@@ -22,6 +23,7 @@ class AudioIO:
         self.id_microfon = self.gaseste_dispozitiv(self.CUVINTE_CHEIE_MIC, tip="input")
         self.id_difuzor = self.gaseste_dispozitiv(self.CUVINTE_CHEIE_HAT, tip="output")
         self.model_vad = None  # lazy
+        self.lock_microfon = threading.Lock()
 
     def este_disponibil(self) -> bool:
         return self.id_microfon is not None and self.id_difuzor is not None
@@ -38,67 +40,81 @@ class AudioIO:
         Se opreste cand detecteaza tacere dupa ce userul a vorbit.
         Returneaza array gol daca userul nu a vorbit deloc (timeout).
         """
-        if self.model_vad is None:
-            self.incarca_vad()
+        with self.lock_microfon:
+            if self.model_vad is None:
+                self.incarca_vad()
 
-        # Cate sample-uri la 44100 corespund unui chunk VAD de 512 @ 16000
-        chunk_44k = int(
-            self.VAD_CHUNK_SAMPLES_16K * self.SAMPLE_RATE_INPUT / self.SAMPLE_RATE_VAD
-        )
+            # Cate sample-uri la 44100 corespund unui chunk VAD de 512 @ 16000
+            chunk_44k = int(
+                self.VAD_CHUNK_SAMPLES_16K
+                * self.SAMPLE_RATE_INPUT
+                / self.SAMPLE_RATE_VAD
+            )
 
-        max_chuncks_tacere = int(
-            self.SECUNDE_TACERE_FINAL
-            * self.SAMPLE_RATE_VAD
-            / self.VAD_CHUNK_SAMPLES_16K
-        )
+            max_chuncks_tacere = int(
+                self.SECUNDE_TACERE_FINAL
+                * self.SAMPLE_RATE_VAD
+                / self.VAD_CHUNK_SAMPLES_16K
+            )
 
-        max_chunks_timeout = int(
-            self.SECUNDE_TIMEOUT_FARA_VORBIRE
-            * self.SAMPLE_RATE_VAD
-            / self.VAD_CHUNK_SAMPLES_16K
-        )
+            max_chunks_timeout = int(
+                self.SECUNDE_TIMEOUT_FARA_VORBIRE
+                * self.SAMPLE_RATE_VAD
+                / self.VAD_CHUNK_SAMPLES_16K
+            )
 
-        buffer_audio = []
-        a_vorbit_vreodata = False
-        chunks_tacere = 0
-        chunks_timeout = 0
+            buffer_audio = []
+            a_vorbit_vreodata = False
+            chunks_tacere = 0
+            chunks_timeout = 0
 
-        with sd.InputStream(
-            samplerate=self.SAMPLE_RATE_INPUT,
-            channels=1,
-            device=self.id_microfon,
-            dtype="float32",
-            blocksize=chunk_44k,
-        ) as stream:
-            while True:
-                bloc, _ = stream.read(chunk_44k)
-                bloc = bloc.flatten()
-                buffer_audio.append(bloc)
+            stream = sd.InputStream(
+                samplerate=self.SAMPLE_RATE_INPUT,
+                channels=1,
+                device=self.id_microfon,
+                dtype="float32",
+                blocksize=chunk_44k,
+            )
 
-                # Resample VAD
-                bloc_16k = self.resample_la_16k(bloc)
-                bloc_16k = self.ajusteaza_lungime(bloc_16k, self.VAD_CHUNK_SAMPLES_16K)
+            stream.start()
 
-                # Interfata VAD
-                probabilitate = self.verifica_vorbire(bloc_16k)
-                este_vorbire = probabilitate >= self.VAD_THRESHOLD
+            try:
+                while True:
+                    bloc, _ = stream.read(chunk_44k)
+                    bloc = bloc.flatten()
+                    buffer_audio.append(bloc)
 
-                if este_vorbire:
-                    if not a_vorbit_vreodata:
-                        print("Speech detected")
-                        a_vorbit_vreodata = True
-                    chunks_tacere = 0
-                else:
-                    if a_vorbit_vreodata:
-                        chunks_tacere += 1
-                        if chunks_tacere >= max_chuncks_tacere:
-                            break
+                    # Resample VAD
+                    bloc_16k = self.resample_la_16k(bloc)
+                    bloc_16k = self.ajusteaza_lungime(
+                        bloc_16k, self.VAD_CHUNK_SAMPLES_16K
+                    )
+
+                    # Interfata VAD
+                    probabilitate = self.verifica_vorbire(bloc_16k)
+                    este_vorbire = probabilitate >= self.VAD_THRESHOLD
+
+                    if este_vorbire:
+                        if not a_vorbit_vreodata:
+                            print("Speech detected")
+                            a_vorbit_vreodata = True
+                        chunks_tacere = 0
                     else:
-                        chunks_timeout += 1
-                        if chunks_timeout >= max_chunks_timeout:
-                            return np.array([], dtype=np.float32)
+                        if a_vorbit_vreodata:
+                            chunks_tacere += 1
+                            if chunks_tacere >= max_chuncks_tacere:
+                                break
+                        else:
+                            chunks_timeout += 1
+                            if chunks_timeout >= max_chunks_timeout:
+                                stream.stop()
+                                stream.close()
+                                return np.array([], dtype=np.float32)
+            finally:
+                stream.stop()
+                stream.close()
 
-        return np.concatenate(buffer_audio)
+            return np.concatenate(buffer_audio)
 
     # Redare
     def redare_array(self, audio: np.ndarray, sample_rate: int):

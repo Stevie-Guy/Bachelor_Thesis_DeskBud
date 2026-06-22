@@ -8,3 +8,5 @@ silero-vad>=5.1.0
 torch>=2.0.0
 torchaudio>=2.0.0
 openwakeword>=0.6.0
+schedule>=1.2.0
+flask>=3.0.0
