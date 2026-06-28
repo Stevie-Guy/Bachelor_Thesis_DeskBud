@@ -1,14 +1,28 @@
 import sys
 import time
 import os
+import random
 
-from core.slm import MotorSLM
-from core.router import ModelRouter
-from core.audio_io import AudioIO
-from core.stt import SpeechToText
-from core.tts import TextToSpeech
-from core.wake_word import DetectorWakeWord
-from features.hydra_server import HydraServer
+from dotenv import load_dotenv
+
+load_dotenv()
+
+from core.slm import MotorSLM  # noqa: E402
+from core.router import ModelRouter  # noqa: E402
+from core.audio_io import AudioIO  # noqa: E402
+from core.stt import SpeechToText  # noqa: E402
+from core.tts import TextToSpeech  # noqa: E402
+from core.wake_word import DetectorWakeWord  # noqa: E402
+from features.hydra_server import HydraServer  # noqa: E402
+from features.tool_router import ToolRouter  # noqa: E402
+from features.tools.hydration_handler import HydrationHandler  # noqa: E402
+from features.tools.clock_handler import ClockHandler  # noqa: E402
+from features.tools.weather_handler import WeatherHandler  # noqa: E402
+from features.calendar_auth import CalendarAuth  # noqa: E402
+from features.tools.calendar_handler import CalendarHandler  # noqa: E402
+from core.notification_manager import ManagerNotificari  # noqa: E402
+from features.presence_detection import MonitorPrezenta  # noqa: E402
+from features.tools.presence_handler import PresenceHandler  # noqa: E402
 
 SYSTEM_PROMPT = (
     "You are DeskBud, a friendly desk assistant that helps with general questions, "
@@ -72,7 +86,6 @@ SEMNE_SFARSIT = {
     ".",
     "!",
     "?",
-    '"',
     "\n",
 }
 CALE_SUNET_TREZIRE = "data/sounds/trezire.wav"
@@ -82,24 +95,41 @@ class DeskBud:
     STARE_IDLE = "idle"
     STARE_ACTIV = "activ"
     TIMEOUT_ACTIV = 300
+    load_dotenv()
 
     def __init__(self):
         self.stare = self.STARE_IDLE
         self.timp_ultimul_prompt = None
-
-        self.audio_io = AudioIO()
-        self.stt = SpeechToText()
-        self.tts = TextToSpeech(self.audio_io)
-        self.detector_wakeword = DetectorWakeWord(self.audio_io)
-        self.hydra_server = HydraServer(audio_io=self.audio_io, tts=self.tts)
-
-        self.istoric = []  # istoric comun intre toate modelele
 
         self.router = ModelRouter(model_rapid=MODEL_RAPID, model_smart=MODEL_SMART)
         self.motoare_slm = {
             MODEL_RAPID: MotorSLM(MODEL_RAPID, sys_prompt=SYSTEM_PROMPT),
             MODEL_SMART: MotorSLM(MODEL_SMART, sys_prompt=SYSTEM_PROMPT),
         }
+
+        self.audio_io = AudioIO()
+        self.stt = SpeechToText()
+        self.tts = TextToSpeech(self.audio_io)
+        self.detector_wakeword = DetectorWakeWord(self.audio_io)
+        self.manager_notificari = ManagerNotificari(self.tts)
+        self.hydra_server = HydraServer(
+            audio_io=self.audio_io,
+            tts=self.tts,
+            manager_notificari=self.manager_notificari,
+        )
+        self.tool_router = ToolRouter()
+        self.tool_router.adauga_handler(HydrationHandler(self.hydra_server))
+        self.tool_router.adauga_handler(ClockHandler())
+        self.tool_router.adauga_handler(WeatherHandler())
+        self.calendar_auth = CalendarAuth()
+        self.calendar_auth.inregistreaza_rute(self.hydra_server.app)
+        self.tool_router.adauga_handler(
+            CalendarHandler(self.calendar_auth, self.motoare_slm[MODEL_SMART])
+        )
+        self.monitor_prezenta = MonitorPrezenta(self.manager_notificari)
+        self.tool_router.adauga_handler(PresenceHandler(self.monitor_prezenta))
+
+        self.istoric = []  # istoric comun intre toate modelele
 
         for motor in self.motoare_slm.values():
             motor.istoric = self.istoric
@@ -112,9 +142,10 @@ class DeskBud:
 
         self.pregateste_componente()
         self.hydra_server.porneste()
+        self.monitor_prezenta.porneste()
 
         print("\nDeskBud is ready.\n")
-        self.tts.vorbeste("DeskBud ready.")
+        self.tts.vorbeste("DeskBud ready to assist.")
 
         try:
             while True:
@@ -155,24 +186,35 @@ class DeskBud:
             print(f"Prompt auzit: {prompt_utilizator}")
             prompt_lower = prompt_utilizator.lower().rstrip(".!?,;:")
 
-            if prompt_lower in EXIT_COMMANDS:
-                mesaj_iesire = "Taking a break!"
-                print(f"DeskBud: {mesaj_iesire}.")
-                self.tts.vorbeste(mesaj_iesire)
-                time.sleep(1)
-                self.stare = self.STARE_IDLE
-                break
+            self.manager_notificari.conversatie_inceput()
+            try:
+                if prompt_lower in EXIT_COMMANDS:
+                    mesaj_iesire = "Taking a break!"
+                    print(f"DeskBud: {mesaj_iesire}.")
+                    self.tts.vorbeste(mesaj_iesire)
+                    time.sleep(1)
+                    self.stare = self.STARE_IDLE
+                    break
 
-            if prompt_utilizator.lower() in RESET_COMMANDS:
-                self.reseteaza_istoric()
-                mesaj_reset = "New conversation started."
-                print(f"{mesaj_reset}\n")
-                self.tts.vorbeste(mesaj_reset)
+                if prompt_utilizator.lower() in RESET_COMMANDS:
+                    self.reseteaza_istoric()
+                    mesaj_reset = "New conversation started."
+                    print(f"{mesaj_reset}\n")
+                    self.tts.vorbeste(mesaj_reset)
+                    self.timp_ultimul_prompt = time.perf_counter()
+                    continue
+
+                raspuns_tool = self.tool_router.proceseaza(prompt_lower)
+                if raspuns_tool is not None:
+                    print(f"Tool: {raspuns_tool}")
+                    self.tts.vorbeste(raspuns_tool)
+                    self.timp_ultimul_prompt = time.perf_counter()
+                    continue
+
+                self.gestioneaza_mesaje(prompt_utilizator)
                 self.timp_ultimul_prompt = time.perf_counter()
-                continue
-
-            self.gestioneaza_mesaje(prompt_utilizator)
-            self.timp_ultimul_prompt = time.perf_counter()
+            finally:
+                self.manager_notificari.conversatie_sfarsit()
 
     def asculta(self) -> str:
         # Asculta pana cand userul termina de vorbit, returneaza text transcris
@@ -196,6 +238,14 @@ class DeskBud:
         else:
             limita = LIMITE_TOKENI[model]
         eticheta = "rapid" if model == MODEL_RAPID else "smart"
+        mesaje_gandire = [
+            "Thinking",
+            "Analysing",
+            "Cooking",
+            "Preparing answer",
+        ]
+        if model == MODEL_SMART:
+            self.tts.vorbeste(random.choice(mesaje_gandire))
         print(f"Model {eticheta}: ", end="", flush=True)
 
         t_start = time.perf_counter()
@@ -272,15 +322,19 @@ class DeskBud:
         t = time.perf_counter()
         self.stt.incarca_model()
         print(f"Whisper STT in {time.perf_counter() - t:.2f}s")
+        time.sleep(2)
 
         t = time.perf_counter()
         self.audio_io.incarca_vad()
         print(f"Silero VAD in {time.perf_counter() - t:.2f}s")
+        time.sleep(2)
 
+        self.tts.vorbeste("Loading AI models. This might take a minute.")
         for nume, motor in self.motoare_slm.items():
             t = time.perf_counter()
             motor.incarcare_model_in_ram()
             print(f"Model {nume} incarcat in {time.perf_counter() - t:.2f}s")
+            time.sleep(3)
 
         t = time.perf_counter()
         self.detector_wakeword.incarca_model()

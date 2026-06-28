@@ -90,3 +90,29 @@ class MotorSLM:
                     yield token
                 if bucata_json.get("done"):
                     break
+
+    def extrage(self, prompt: str, num_tokens: int = 80) -> str:
+        # Inferenta unica, fara sys_prompt si fara istoric, pentru extrageri structurate (JSON).
+
+        payload = {
+            "model": self.model,
+            "messages": [{"role": "user", "content": prompt}],
+            "stream": False,
+            "options": {
+                "num_predict": num_tokens,
+                "temperature": 0.1,
+                "top_p": 0.9,
+            },
+        }
+
+        date = json.dumps(payload).encode("utf-8")
+        req = urllib.request.Request(
+            f"{self.OLLAMA_URL}/api/chat",
+            data=date,
+            headers={"Content-Type": "application/json"},
+            method="POST",
+        )
+
+        with urllib.request.urlopen(req, timeout=60) as raspuns:
+            date_raspuns = json.loads(raspuns.read().decode("utf-8"))
+        return date_raspuns.get("message", {}).get("content", "")

@@ -48,5 +48,8 @@
     <string name="titlu_sterge_apa">Șterge apă băută (ml)</string>
     <string name="placeholder_sterge_apa">ex: 500</string>
     <string name="text_btn_sterge">Șterge</string>
+    <string name="txt_google_calendar">Google Calendar</string>
+    <string name="btn_conecteaz_google_cal">Conectează</string>
+    <string name="btn_deconect_google_cal">Deconectează</string>
 
 </resources>

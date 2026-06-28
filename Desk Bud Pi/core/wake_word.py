@@ -40,6 +40,7 @@ class DetectorWakeWord:
         ultima_detectie = 0
         self.model.reset()
         DURATA_SESIUNE = 60
+        contor_print = 0
 
         while True:
             t_inceput = time.perf_counter()
@@ -56,7 +57,9 @@ class DetectorWakeWord:
                         predictii = self.model.predict(date_int16)
                         scor_maxim = max(predictii.values()) if predictii else 0.0
 
-                        print(f"  scor: {scor_maxim:.3f}", end="\r")
+                        contor_print += 1
+                        if contor_print % 12 == 0 or scor_maxim >= 0.3:
+                            print(f"  scor: {scor_maxim:.3f}", end="\r")
 
                         if scor_maxim >= self.PRAG_DETECTIE:
                             acum = time.perf_counter()

@@ -7,9 +7,8 @@ Implementam cele 5 tehnici de protectie (Vexa, GitHub openai/whisper):
 5. beam_size=1 - greedy decode, esueaza rapid pe tacere
 """
 
-import os
+import io
 import re
-import tempfile
 import numpy as np
 import soundfile as sf
 from faster_whisper import WhisperModel
@@ -128,30 +127,24 @@ class SpeechToText:
                 "Model nu a fost incarcat. Apeleaza incarca_model() inainte"
             )
 
-        with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as f:
-            cale_wav = f.name
-        sf.write(cale_wav, audio, self.SAMPLE_RATE)
+        buffer_wav = io.BytesIO()
+        sf.write(buffer_wav, audio, self.SAMPLE_RATE, format="WAV")
+        buffer_wav.seek(0)
 
-        try:
-            segmente, _ = self.model.transcribe(
-                cale_wav,
-                language=self.LANGUAGE,
-                beam_size=self.BEAM_SIZE,
-                condition_on_previous_text=self.CONDITION_ON_PREVIOUS,
-                vad_filter=True,
-                vad_parameters=self.VAD_PARAMS,
-                no_speech_threshold=self.PRAG_NO_SPEECH,
-                log_prob_threshold=self.PRAG_LOGPROB,
-            )
+        segmente, _ = self.model.transcribe(
+            buffer_wav,
+            language=self.LANGUAGE,
+            beam_size=self.BEAM_SIZE,
+            condition_on_previous_text=self.CONDITION_ON_PREVIOUS,
+            vad_filter=True,
+            vad_parameters=self.VAD_PARAMS,
+            no_speech_threshold=self.PRAG_NO_SPEECH,
+            log_prob_threshold=self.PRAG_LOGPROB,
+        )
 
-            segmente_valide = [
-                s.text.strip() for s in segmente if self.segment_valid(s)
-            ]
+        segmente_valide = [s.text.strip() for s in segmente if self.segment_valid(s)]
 
-            text = " ".join(segmente_valide).strip()
-
-        finally:
-            os.remove(cale_wav)
+        text = " ".join(segmente_valide).strip()
 
         if not self.text_valid(text):
             return ""

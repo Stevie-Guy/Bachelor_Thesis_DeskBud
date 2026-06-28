@@ -1,26 +1,34 @@
 package com.filimon_stefan.deskbudhydra.fragments;
 
+import android.app.AlertDialog;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.browser.customtabs.CustomTabsIntent;
 import androidx.fragment.app.Fragment;
 
-import com.filimon_stefan.deskbudhydra.preparation.PrefsHelper;
 import com.filimon_stefan.deskbudhydra.R;
+import com.filimon_stefan.deskbudhydra.network.CalendarConnectionManager;
+import com.filimon_stefan.deskbudhydra.preparation.PrefsHelper;
 import com.filimon_stefan.deskbudhydra.preparation.WaterGoalCalculator;
 import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.textfield.TextInputEditText;
 
+import okhttp3.OkHttpClient;
+
 public class FragmentCalculator extends Fragment {
+    // --- Variabile Calculator ---
     private TextInputEditText tietGreutate;
     private Button btnBarbat;
     private Button btnFemeie;
@@ -31,6 +39,14 @@ public class FragmentCalculator extends Fragment {
     private TextView tvRezultatGoalMililitri;
     private String genSelectat = "M"; // default am setat M
     private PrefsHelper prefs;
+
+    // --- Variabile Calendar ---
+    private OkHttpClient clientHttp = new OkHttpClient();
+    private CalendarConnectionManager calendar;
+    private Button btnConecteazaCalendar;
+    private Button btnDeconecteazaCalendar;
+    private LinearLayout layoutPasteCod;
+    private TextInputEditText inputCodCalendar;
 
     @Nullable
     @Override
@@ -77,6 +93,9 @@ public class FragmentCalculator extends Fragment {
         btnCalculeaza.setOnClickListener(v -> calculeazaGoal());
 
         btnInfo.setOnClickListener(v -> afiseazaDialogFormule());
+
+        // Apelăm inițializarea pentru Calendar pe noul design
+        initCalendarUI(view);
     }
 
     private void toggleButoaneGen(){
@@ -156,5 +175,136 @@ public class FragmentCalculator extends Fragment {
                 .setMessage(mesaj)
                 .setPositiveButton("Ok", null)
                 .show();
+    }
+
+    // CALENDAR
+    private void initCalendarUI(View v) {
+        String ip = prefs.getPiIp();
+        String baseUrl = "http://" + ip + ":5000";
+
+        calendar = new CalendarConnectionManager(clientHttp, baseUrl);
+
+        btnConecteazaCalendar = v.findViewById(R.id.btn_conecteaza_calendar);
+        btnDeconecteazaCalendar = v.findViewById(R.id.btn_deconecteaza_calendar);
+        layoutPasteCod = v.findViewById(R.id.layout_paste_cod);
+        inputCodCalendar = v.findViewById(R.id.input_cod_calendar);
+
+        arataStareNeconectat();
+
+        v.findViewById(R.id.btn_conecteaza_calendar).setOnClickListener(x -> {
+            calendar.porneste_conectare(new CalendarConnectionManager.Listener<String>() {
+                @Override public void pe_succes(String authUrl) {
+                    requireActivity().runOnUiThread(() -> {
+                        new CustomTabsIntent.Builder().build()
+                                .launchUrl(requireContext(), Uri.parse(authUrl));
+                        arataStarePaste();
+                    });
+                }
+                @Override public void pe_eroare(String mesaj) {
+                    requireActivity().runOnUiThread(() ->
+                            Toast.makeText(requireContext(),
+                                    "Calendarul nu este configurat pe acest dispozitiv.",
+                                    Toast.LENGTH_LONG).show());
+                }
+            });
+        });
+
+        v.findViewById(R.id.btn_renunta_calendar).setOnClickListener(x ->
+                arataStareNeconectat());
+
+        v.findViewById(R.id.btn_confirma_cod_calendar).setOnClickListener(x -> {
+            String cod = inputCodCalendar.getText() != null ? inputCodCalendar.getText().toString() : "";
+            if (cod.trim().isEmpty()) {
+                Toast.makeText(requireContext(),
+                        "Lipește adresa mai întâi.", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            calendar.trimite_cod(cod, new CalendarConnectionManager.Listener<Boolean>() {
+                @Override public void pe_succes(Boolean ok) {
+                    requireActivity().runOnUiThread(() -> {
+                        if (ok) {
+                            inputCodCalendar.setText("");
+                            arataStareConectat();
+                            Toast.makeText(requireContext(),
+                                    "Calendar conectat.", Toast.LENGTH_SHORT).show();
+                        } else {
+                            Toast.makeText(requireContext(),
+                                    "Adresa nu funcționează. Încearcă din nou.",
+                                    Toast.LENGTH_LONG).show();
+                        }
+                    });
+                }
+                @Override public void pe_eroare(String mesaj) {
+                    requireActivity().runOnUiThread(() ->
+                            Toast.makeText(requireContext(),
+                                    "Eroare la conexiune.", Toast.LENGTH_SHORT).show());
+                }
+            });
+        });
+
+        v.findViewById(R.id.btn_deconecteaza_calendar).setOnClickListener(x ->
+                new AlertDialog.Builder(requireContext())
+                        .setTitle("Deconectează Calendar")
+                        .setMessage("Sigur vrei să deconectezi DeskBud de la Google Calendar?")
+                        .setPositiveButton("Deconectează", (d, w) ->
+                                calendar.deconecteaza(new CalendarConnectionManager.Listener<Boolean>() {
+                                    @Override public void pe_succes(Boolean ok) {
+                                        requireActivity().runOnUiThread(() -> {
+                                            if (ok) arataStareNeconectat();
+                                        });
+                                    }
+                                    @Override public void pe_eroare(String mesaj) {
+                                        requireActivity().runOnUiThread(() ->
+                                                Toast.makeText(requireContext(),
+                                                        "Eroare.", Toast.LENGTH_SHORT).show());
+                                    }
+                                }))
+                        .setNegativeButton("Anulează", null)
+                        .show());
+
+        reincarca_status();
+    }
+
+    private void reincarca_status() {
+        if (calendar == null) return;
+        calendar.cere_status(new CalendarConnectionManager.Listener<CalendarConnectionManager.Status>() {
+            @Override public void pe_succes(CalendarConnectionManager.Status s) {
+                requireActivity().runOnUiThread(() -> {
+                    if (s.connected) {
+                        arataStareConectat();
+                    } else if (layoutPasteCod.getVisibility() != View.VISIBLE) {
+                        arataStareNeconectat();
+                    }
+                });
+            }
+            @Override public void pe_eroare(String mesaj) {
+                // Pi-ul nu raspunde - lasam starea curenta
+            }
+        });
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        reincarca_status();
+    }
+
+    // Helperi
+    private void arataStareNeconectat() {
+        btnConecteazaCalendar.setVisibility(View.VISIBLE);
+        btnDeconecteazaCalendar.setVisibility(View.GONE);
+        layoutPasteCod.setVisibility(View.GONE);
+    }
+
+    private void arataStarePaste() {
+        btnConecteazaCalendar.setVisibility(View.VISIBLE);
+        btnDeconecteazaCalendar.setVisibility(View.GONE);
+        layoutPasteCod.setVisibility(View.VISIBLE);
+    }
+
+    private void arataStareConectat() {
+        btnConecteazaCalendar.setVisibility(View.GONE);
+        btnDeconecteazaCalendar.setVisibility(View.VISIBLE);
+        layoutPasteCod.setVisibility(View.GONE);
     }
 }

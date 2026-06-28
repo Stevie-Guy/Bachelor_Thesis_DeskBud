@@ -41,11 +41,4 @@ public class HydrationApiApp {
             callback.onFail("Eroare JSON :" + e.getMessage());
         }
     }
-
-//    Test conexiune cu Pi
-    public void ping(ApiClient.ApiCallback callback){
-        String url = baseUrl + "/api/ping";
-        Log.d(TAG, "Trimitem ping la " + url);
-        ApiClient.get(url, callback);
-    }
 }

@@ -24,6 +24,7 @@ class AudioIO:
         self.id_difuzor = self.gaseste_dispozitiv(self.CUVINTE_CHEIE_HAT, tip="output")
         self.model_vad = None  # lazy
         self.lock_microfon = threading.Lock()
+        self.cache_resample = {}
 
     def este_disponibil(self) -> bool:
         return self.id_microfon is not None and self.id_difuzor is not None
@@ -154,11 +155,24 @@ class AudioIO:
 
     def resample_la_16k(self, audio: np.ndarray) -> np.ndarray:
         # Downsample prin interpolare liniara. Suficient pentru vad
-        nr_sample_16k = int(len(audio) * self.SAMPLE_RATE_VAD / self.SAMPLE_RATE_INPUT)
+        # Downsample prin interpolare liniara. Suficient pentru VAD si wake word.
+        # Indicii depind doar de lungimea blocului (mereu constanta: 1411 sau 3528),
+        # asa ca ii cache-uim ca sa nu mai alocam linspace + arange la fiecare chunk.
+        lungime_audio = len(audio)
+        nr_sample_16k = int(
+            lungime_audio * self.SAMPLE_RATE_VAD / self.SAMPLE_RATE_INPUT
+        )
         if nr_sample_16k == 0:
             return np.array([], dtype=np.float32)
-        indici = np.linspace(0, len(audio) - 1, nr_sample_16k)
-        return np.interp(indici, np.arange(len(audio)), audio).astype(np.float32)
+
+        cache = self.cache_resample.get(lungime_audio)
+        if cache is None:
+            indici = np.linspace(0, lungime_audio - 1, nr_sample_16k)
+            xp = np.arange(lungime_audio)
+            self.cache_resample[lungime_audio] = (indici, xp)
+        else:
+            indici, xp = cache
+        return np.interp(indici, xp, audio).astype(np.float32)
 
     def ajusteaza_lungime(self, audio: np.ndarray, lungime_dorita: int) -> np.ndarray:
         # Padding sau truncare la lungimea exacta ceruta de Silero, altfel crapa

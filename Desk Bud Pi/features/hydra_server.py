@@ -14,10 +14,13 @@ CONFIG_FILE = Path(__file__).parent / "hydration_config.json"
 
 
 class HydraServer:
-    def __init__(self, audio_io: AudioIO, tts: TextToSpeech, asistent=None):
+    def __init__(
+        self, audio_io: AudioIO, tts: TextToSpeech, manager_notificari, asistent=None
+    ):
         self.audio_io = audio_io
         self.tts = tts
         self.app = Flask(__name__)
+        self.manager_notificari = manager_notificari
 
         self.status_curent = {
             "ml_bauti": 0,
@@ -71,6 +74,16 @@ class HydraServer:
         return ore
 
     def verifica_nevoie_reminder(self, numar_reminder, total_remindere):
+        azi = datetime.now().strftime("%Y-%m-%d")
+
+        if (
+            not self.status_curent["ultima_actualizare"]
+            or self.status_curent["data"] != azi
+        ):
+            mesaj = "Hey, it's time to drink some water."
+            self.manager_notificari.trimite(mesaj)
+            return
+
         ml_bauti = self.status_curent["ml_bauti"]
         goal = self.status_curent["goal"]
 
@@ -93,14 +106,14 @@ class HydraServer:
             mesaj = f"Hey, you are only at {procent} percent of your daily water goal. You should drink some water soon."
 
         print(f"Reminder vocal: {mesaj}")
-        self.tts.vorbeste(mesaj)
+        self.manager_notificari.trimite(mesaj)
 
     def programeaza_remindere(self):
         schedule.clear()
         numar = self.config["numar_remindere"]
         ore = self.calculeaza_ore_reminder(numar)
 
-        print(f"\nRemindere: ")
+        print("\nRemindere: ")
         for index, ora in ore:
             print(f"  Reminder {index}/{numar} la ora {ora}")
             schedule.every().day.at(ora).do(
@@ -192,21 +205,6 @@ class HydraServer:
                 ora_start = int(date["ora_start"])
                 ora_final = int(date["ora_final"])
                 numar = int(date["numar_remindere"])
-
-                if ora_start < 10 or ora_start > 14:
-                    mesaj = "Hour for the first hydration reminder must be between 10 AM and 2 PM"
-                    self.tts.vorbeste(mesaj)
-                    return jsonify({"eroare": "ora_start trebuie intre 10 si 14"}), 400
-                if ora_final < 20 or ora_final > 23:
-                    mesaj = "Hour for the last hydration reminder must be between 8 PM and 11 PM"
-                    self.tts.vorbeste(mesaj)
-                    return jsonify({"eroare": "ora_final trebuie intre 20 si 23"}), 400
-                if numar < 3 or numar > 10:
-                    mesaj = "Number of hydration reminders must be between 3 and 10"
-                    self.tts.vorbeste(mesaj)
-                    return jsonify(
-                        {"eroare": "numar_remindere trebuie intre 3 si 10"}
-                    ), 400
 
                 self.config["ora_start"] = ora_start
                 self.config["ora_final"] = ora_final

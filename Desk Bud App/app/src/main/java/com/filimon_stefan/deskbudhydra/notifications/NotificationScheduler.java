@@ -47,10 +47,9 @@ public class NotificationScheduler {
             calendar.add(Calendar.DAY_OF_YEAR, 1);
         }
 
-        alarmManager.setInexactRepeating(
+        alarmManager.setExactAndAllowWhileIdle(
                 AlarmManager.RTC_WAKEUP,
                 calendar.getTimeInMillis(),
-                AlarmManager.INTERVAL_DAY,
                 pendingIntent
         );
 
