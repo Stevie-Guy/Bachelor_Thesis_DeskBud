@@ -31,11 +31,18 @@ class ManagerNotificari:
     def bucla(self):
         while True:
             mesaj = self.coada.get()
+
+            # Asteptam pana avem `intarziere` secunde continue fara conversatie
+            # activa, apoi rostim. tts.vorbeste va lua lock-ul de redare si va
+            # muta microfonul singur (anti-ecou).
             while not self.asteapta_liniste(self.intarziere):
                 pass
             self.tts.vorbeste(mesaj)
 
     def asteapta_liniste(self, secunde):
+        # Returneaza True daca au trecut `secunde` fara conversatie activa.
+        # Daca o conversatie incepe in fereastra, asteapta sa se termine si
+        # returneaza False (reluam numaratoarea pentru acelasi mesaj).
         pas = 0.1
         timp_scurs = 0.0
         while timp_scurs < secunde:
@@ -44,5 +51,5 @@ class ManagerNotificari:
                     time.sleep(pas)
                 return False
             time.sleep(pas)
-            secunde += pas
+            timp_scurs += pas
         return True

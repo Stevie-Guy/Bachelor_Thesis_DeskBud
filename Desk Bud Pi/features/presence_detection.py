@@ -24,8 +24,9 @@ class MonitorPrezenta:
     Picamera2 captureaza cadre la intervale fixe, daca fata e prezanta, cronometrul continua.
     Dupa pauza >= 4 min - reset. Peste prag => reminder vocal asincron repetat la 5 min pana la pauza."""
 
-    def __init__(self, manager_notificari):
+    def __init__(self, manager_notificari, detector_atentie):
         self.manager = manager_notificari
+        self.detector_atentie = detector_atentie
         self.timp_la_birou = 0.0
         self.timp_absent = 0.0
         self.reminder_trimis = False
@@ -68,8 +69,14 @@ class MonitorPrezenta:
         self.porneste_camera()
         try:
             while self.ruleaza:
-                fata = self.detecteaza_fata()
+                cadru = self.capteaza_cadru()
+                if cadru is None:
+                    time.sleep(INTERVAL_VERIFICARE)
+                    continue
+                fata = self.detecteaza_fata(cadru)
                 self.tick(fata)
+                if self.detector_atentie:
+                    self.detector_atentie.tick(fata, cadru)
                 time.sleep(INTERVAL_VERIFICARE)
         finally:
             self.opreste_camera()
@@ -88,6 +95,8 @@ class MonitorPrezenta:
 
     def opreste_camera(self):
         try:
+            if self.detector_atentie:
+                self.detector_atentie.inchide()
             if self.cam:
                 self.cam.stop()
             if self.fd:
@@ -95,11 +104,8 @@ class MonitorPrezenta:
         except Exception as e:
             print(f"Eroare la oprirea camerei: {e}")
 
-    def detecteaza_fata(self) -> bool:
+    def detecteaza_fata(self, cadru) -> bool:
         try:
-            cadru = self.cam.capture_array()
-            if cadru.shape[2] == 4:  # XBGR/RGBA -> luam doar 3 canale
-                cadru = cadru[:, :, :3]
             mic = cv2.resize(cadru, DIM_CADRU)
             rgb = cv2.cvtColor(mic, cv2.COLOR_BGR2RGB)
             rez = self.fd.process(rgb)
@@ -192,3 +198,13 @@ class MonitorPrezenta:
             urmatorul = self.timp_la_birou_la_ultim_reminder + INTERVAL_REMINDER
             ramas = urmatorul - self.timp_la_birou
         return max(0, ramas)
+
+    def capteaza_cadru(self):
+        try:
+            cadru = self.cam.capture_array()
+            if cadru.shape[2] == 4:  # XBGR/RGBA -> luam doar 3 canale
+                cadru = cadru[:, :, :3]
+            return cadru
+        except Exception as e:
+            print(f"X Eroare captura cadru: {e}")
+            return None

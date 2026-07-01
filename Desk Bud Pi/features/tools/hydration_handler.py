@@ -17,6 +17,7 @@ CUVINTE_STATUS_APA = (
     "did i drink today",
     "what is my water goal",
     "what is my water gold",
+    "what is my water go",
     "but is my water goal",
     "but is my water gold",
     "what is my daily water goal",
@@ -29,6 +30,7 @@ CUVINTE_STATUS_APA = (
     "what is my water intake percent",
     "what is my water intake percentage",
     "what percentage have i achieved",
+    "is my hydration level",
 )
 
 CUVINTE_SET_ORA_START_REMINDERE = (

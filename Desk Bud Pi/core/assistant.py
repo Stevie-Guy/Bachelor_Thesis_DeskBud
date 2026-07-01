@@ -23,6 +23,7 @@ from features.tools.calendar_handler import CalendarHandler  # noqa: E402
 from core.notification_manager import ManagerNotificari  # noqa: E402
 from features.presence_detection import MonitorPrezenta  # noqa: E402
 from features.tools.presence_handler import PresenceHandler  # noqa: E402
+from features.attention_detection import DetectorAtentie  # noqa: E402
 
 SYSTEM_PROMPT = (
     "You are DeskBud, a friendly desk assistant that helps with general questions, "
@@ -90,6 +91,13 @@ SEMNE_SFARSIT = {
 }
 CALE_SUNET_TREZIRE = "data/sounds/trezire.wav"
 
+MESAJE_GANDIRE = (
+    "Thinking",
+    "Analysing",
+    "Cooking",
+    "Preparing answer",
+)
+
 
 class DeskBud:
     STARE_IDLE = "idle"
@@ -117,20 +125,17 @@ class DeskBud:
             tts=self.tts,
             manager_notificari=self.manager_notificari,
         )
-        self.tool_router = ToolRouter()
-        self.tool_router.adauga_handler(HydrationHandler(self.hydra_server))
-        self.tool_router.adauga_handler(ClockHandler())
-        self.tool_router.adauga_handler(WeatherHandler())
         self.calendar_auth = CalendarAuth()
         self.calendar_auth.inregistreaza_rute(self.hydra_server.app)
-        self.tool_router.adauga_handler(
-            CalendarHandler(self.calendar_auth, self.motoare_slm[MODEL_SMART])
+        self.detector_atentie = DetectorAtentie(
+            self.manager_notificari, interval_verificare=60
         )
-        self.monitor_prezenta = MonitorPrezenta(self.manager_notificari)
-        self.tool_router.adauga_handler(PresenceHandler(self.monitor_prezenta))
+        self.monitor_prezenta = MonitorPrezenta(
+            self.manager_notificari, self.detector_atentie
+        )
+        self.tool_router = self.construieste_tool_router()
 
         self.istoric = []  # istoric comun intre toate modelele
-
         for motor in self.motoare_slm.values():
             motor.istoric = self.istoric
 
@@ -141,8 +146,39 @@ class DeskBud:
             sys.exit(1)
 
         self.pregateste_componente()
+        self.audio_io.porneste_captura()
         self.hydra_server.porneste()
         self.monitor_prezenta.porneste()
+
+        # Reminder TEST
+        import threading
+
+        def trimite_test():
+            print("\n[TEST] Trimit reminder-ul catre coada chiar acum!")
+            self.manager_notificari.trimite(
+                "This is a test reminder triggered after two minutes."
+            )
+
+        threading.Timer(120.0, trimite_test).start()
+        print("[TEST] Cronometru de 2 minute pornit.")
+
+        def trimite_test():
+            print("\n[TEST] Trimit reminder-ul catre coada chiar acum!")
+            self.manager_notificari.trimite(
+                "This is a test reminder triggered after five minutes."
+            )
+
+        threading.Timer(300.0, trimite_test).start()
+        print("[TEST] Cronometru de 5 minute pornit.")
+
+        def trimite_test():
+            print("\n[TEST] Trimit reminder-ul catre coada chiar acum!")
+            self.manager_notificari.trimite(
+                "This is a test reminder triggered after ten minutes."
+            )
+
+        threading.Timer(600.0, trimite_test).start()
+        print("[TEST] Cronometru de 10 minute pornit.")
 
         print("\nDeskBud is ready.\n")
         self.tts.vorbeste("DeskBud ready to assist.")
@@ -238,14 +274,8 @@ class DeskBud:
         else:
             limita = LIMITE_TOKENI[model]
         eticheta = "rapid" if model == MODEL_RAPID else "smart"
-        mesaje_gandire = [
-            "Thinking",
-            "Analysing",
-            "Cooking",
-            "Preparing answer",
-        ]
         if model == MODEL_SMART:
-            self.tts.vorbeste(random.choice(mesaje_gandire))
+            self.tts.vorbeste(random.choice(MESAJE_GANDIRE))
         print(f"Model {eticheta}: ", end="", flush=True)
 
         t_start = time.perf_counter()
@@ -339,6 +369,22 @@ class DeskBud:
         t = time.perf_counter()
         self.detector_wakeword.incarca_model()
         print(f"Wake word model in {time.perf_counter() - t:.2f}s")
+
+    def construieste_tool_router(self) -> ToolRouter:
+        """Asambleaza toate handlerele intr-un router. Separat de orchestrare (SRP)."""
+        router = ToolRouter()
+        router.adauga_handler(HydrationHandler(self.hydra_server))
+        router.adauga_handler(ClockHandler())
+        router.adauga_handler(WeatherHandler())
+        router.adauga_handler(
+            CalendarHandler(self.calendar_auth, self.motoare_slm[MODEL_SMART])
+        )
+        router.adauga_handler(
+            PresenceHandler(
+                self.monitor_prezenta, detector_atentie=self.detector_atentie
+            )
+        )
+        return router
 
     def reda_sunet_trezire(self):
         """Reda sunetul de confirmare pentru WW"""

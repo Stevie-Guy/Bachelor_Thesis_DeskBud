@@ -52,6 +52,35 @@ CUVINTE_TIMP_REMINDER = (
     "time until next break",
 )
 
+CUVINTE_OPRESTE_ATENTIE = (
+    "stop focus reminders",
+    "stop focus warnings",
+    "stop attention reminders",
+    "stop attention warnings",
+    "disable focus reminders",
+    "disable focus warnings",
+    "disable attention reminders",
+    "disable attention warnings",
+    "turn off focus reminders",
+    "turn off attention reminders",
+    "stop telling me to focus",
+    "stop distraction warnings",
+    "stop distraction reminders",
+    "i am just vibing",
+    "i'm just vibing",
+    "i am just chilling",
+    "i'm just chilling",
+)
+
+CUVINTE_PORNESTE_ATENTIE = (
+    "start focus reminders",
+    "enable focus reminders",
+    "enable attention reminders",
+    "turn on focus reminders",
+    "turn on attention reminders",
+    "resume focus reminders",
+)
+
 
 class PresenceHandler(ToolHandler):
     """
@@ -60,12 +89,22 @@ class PresenceHandler(ToolHandler):
     Rule-based (fara LLM) - extragere simpla de numar.
     """
 
-    def __init__(self, monitor_prezenta):
+    def __init__(self, monitor_prezenta, detector_atentie):
         self.monitor = monitor_prezenta
+        self.atentie = detector_atentie
 
     def proceseaza(self, text):
         if any(cuvant in text for cuvant in CUVINTE_TIMP_REMINDER):
             return self.raspuns_timp_pana_la_reminder()
+
+        if self.atentie is not None:
+            if any(cuvant in text for cuvant in CUVINTE_OPRESTE_ATENTIE):
+                self.atentie.opreste_warnings()
+                return "Okay, I'll stop the focus reminders for today."
+            if any(cuvant in text for cuvant in CUVINTE_PORNESTE_ATENTIE):
+                self.atentie.porneste_warnings()
+                return "Turning focus reminders back on."
+
         if not any(cuvant in text for cuvant in CUVINTE_PRAG):
             return None
 

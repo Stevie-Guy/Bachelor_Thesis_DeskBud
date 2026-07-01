@@ -18,7 +18,7 @@ class SpeechToText:
     MODEL_SIZE = "base"
     LANGUAGE = "en"
     COMPUTE_TYPE = "int8"
-    SAMPLE_RATE = 44100
+    SAMPLE_RATE = 16000  # 44100
 
     # Parametri Whisper anti-halucinare
     BEAM_SIZE = 1

@@ -12,6 +12,7 @@ from features.tools.abstract_tool import ToolHandler
 
 CUVINTE_CONECTARE = (
     "connect calendar",
+    "connect the calendar",
     "connect google calendar",
 )
 
@@ -19,9 +20,13 @@ CUVINTE_CITIRE = (
     "what's on my calendar",
     "whats on my calendar",
     "what is on my calendar",
+    "what is my calendar",
     "what's on my schedule",
     "whats on my schedule",
     "what is on my schedule",
+    "what is my schedule",
+    "what is my program for today",
+    "what is my program for tomorrow",
     "my calendar tomorrow",
     "my calendar today",
     "calendar for today",
